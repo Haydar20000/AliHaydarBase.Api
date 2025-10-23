@@ -4,10 +4,23 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- <UserSecretsId>8df3bb27-1160-4449-baed-87c8049cafba</UserSecretsId> -->
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.72.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
 
 </Project>
+ <!-- <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5" /> -->
