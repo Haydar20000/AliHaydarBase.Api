@@ -12,6 +12,8 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
     {
         public void Configure(EntityTypeBuilder<ClaimDefinition> builder)
         {
+            var createdAt = new DateTime(2025, 10, 24, 22, 0, 0, DateTimeKind.Utc);
+
             builder.HasData(
              new ClaimDefinition
              {
@@ -24,7 +26,8 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                  Scope = "UserManagement",
                  Group = "Organizational",
                  IsActive = true,
-                 CreatedAt = DateTime.UtcNow
+                 CreatedAt = SeedConstants.SeededAt
+
              },
                 new ClaimDefinition
                 {
@@ -37,7 +40,7 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Scope = "UserManagement",
                     Group = "Organizational",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedConstants.SeededAt
                 }, new ClaimDefinition
                 {
                     Id = Guid.Parse("c3bfe781-1f6a-465b-896e-6f233376b74d"),
@@ -49,7 +52,7 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Scope = "Academic",
                     Group = "Academic",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedConstants.SeededAt
                 }
 
 

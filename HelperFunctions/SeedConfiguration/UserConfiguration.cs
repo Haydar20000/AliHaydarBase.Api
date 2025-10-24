@@ -14,7 +14,7 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
         {
             builder.HasData(new User
             {
-                Id = "09cb0259-1714-4576-9a22-fca5b700817e",
+                Id = SeedConstants.AdminUserId,
                 Email = "hay19732000@gmail.com",
                 NormalizedEmail = "HAY19732000@GMAIL.COM",
                 UserName = "hay19732000@gmail.com",
