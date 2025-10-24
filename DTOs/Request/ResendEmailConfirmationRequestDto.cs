@@ -13,6 +13,6 @@ namespace AliHaydarBase.Api.DTOs.Request
         [EmailAddress(ErrorMessage = DkString.EmailError02)]
         [DataType(DataType.EmailAddress)]
         [Display(Name = DkString.Email)]
-        public string? Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }

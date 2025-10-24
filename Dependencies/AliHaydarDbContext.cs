@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AliHaydarBase.Api.Dependencies
 {
-     public class AliHaydarDbContext(DbContextOptions<AliHaydarDbContext> options) : IdentityDbContext<User, Role, string>(options)
+    public class AliHaydarDbContext(DbContextOptions<AliHaydarDbContext> options) : IdentityDbContext<User, Role, string>(options)
     {
+        public DbSet<RefreshTokenEntry> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

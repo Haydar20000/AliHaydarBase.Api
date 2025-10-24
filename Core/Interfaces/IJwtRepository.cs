@@ -12,5 +12,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
         JwtResponseDto GenerateAccessToken(JwtRequestDto request);
         JwtResponseDto GenerateRefreshToken();
         bool ReadJwtToken(string token);
+        bool IsTokenValid(string token);
+
     }
 }

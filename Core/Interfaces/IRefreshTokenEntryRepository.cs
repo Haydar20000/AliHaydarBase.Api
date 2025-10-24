@@ -6,12 +6,8 @@ using AliHaydarBase.Api.Core.Models;
 
 namespace AliHaydarBase.Api.Core.Interfaces
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IRefreshTokenEntryRepository : IRepository<RefreshTokenEntry>
     {
-        IUsersRepository User { get; }
-        IRefreshTokenEntryRepository RefreshTokens { get; }
-
-        Task<int> Complete();
 
     }
 }

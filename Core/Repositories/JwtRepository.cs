@@ -16,9 +16,12 @@ namespace AliHaydarBase.Api.Core.Repositories
     public class JwtRepository : IJwtRepository
     {
         private readonly IConfiguration _configuration;
+
+
         public JwtRepository(IConfiguration configuration)
         {
             _configuration = configuration;
+
         }
         public JwtResponseDto GenerateAccessToken(JwtRequestDto request)
         {
@@ -83,18 +86,36 @@ namespace AliHaydarBase.Api.Core.Repositories
 
         private List<Claim> BuildClaims(User user, IList<string> roles)
         {
-            var claims = new List<Claim>
-     {
-         new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-         new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-         new Claim("email_verified", user.EmailConfirmed.ToString()),
-         new Claim(JwtRegisteredClaimNames.Exp,
-    new DateTimeOffset(DateTime.UtcNow.AddMinutes(30)).ToUnixTimeSeconds().ToString())
+            var now = DateTime.UtcNow;
+            var expiry = now.AddMinutes(30);
 
-     };
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                new Claim("email_verified", user.EmailConfirmed.ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
+                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
+                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiry).ToUnixTimeSeconds().ToString())
+            };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
             return claims;
+
+        }
+
+        public bool IsTokenValid(string token)
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var now = DateTime.UtcNow;
+
+            var exp = jwt.Payload.Expiration;
+            var nbf = jwt.Payload.NotBefore;
+
+            return exp.HasValue && nbf.HasValue &&
+                   now >= DateTimeOffset.FromUnixTimeSeconds(nbf.Value).UtcDateTime &&
+                   now <= DateTimeOffset.FromUnixTimeSeconds(exp.Value).UtcDateTime;
+
         }
 
         private JwtSecurityToken CreateJwtToken(SigningCredentials credentials, IEnumerable<Claim> claims)

@@ -21,89 +21,87 @@ namespace AliHaydarBase.Api.Core.Repositories
             _userManager = userManager;
             _jwtRepository = jwtRepository;
         }
-
         public async Task<AuthResponseDto> GoogleLogin(GoogleLoginRequestDto request)
         {
             var response = new AuthResponseDto();
-            if (string.IsNullOrEmpty(request.idToken))
+
+            if (string.IsNullOrWhiteSpace(request.idToken))
             {
                 response.Errors.Add("Invalid Authentication");
                 response.IsSuccessful = false;
                 return response;
             }
+
             try
             {
-
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
                     Audience = new List<string>
             {
-                _configuration["Google:ClientId"]??"",
-                _configuration["Google:ANDROIDd"]??"",
-                _configuration["Google:Web"]??""
+                _configuration["Google:ClientId"] ?? string.Empty,
+                _configuration["Google:ANDROIDd"] ?? string.Empty,
+                _configuration["Google:Web"] ?? string.Empty
             }
                 };
 
-                GoogleJsonWebSignature.Payload _googlePayload = await GoogleJsonWebSignature.ValidateAsync(request.idToken, settings);
-
-                if (_googlePayload == null)
+                var googlePayload = await GoogleJsonWebSignature.ValidateAsync(request.idToken, settings);
+                if (googlePayload == null || string.IsNullOrWhiteSpace(googlePayload.Email))
                 {
                     response.Errors.Add("Invalid Authentication");
                     response.IsSuccessful = false;
                     return response;
                 }
-                var user = await _userManager.FindByEmailAsync(_googlePayload.Email);
+
+                var user = await _userManager.FindByEmailAsync(googlePayload.Email);
                 if (user == null)
                 {
                     user = new User
                     {
-                        UserName = _googlePayload.Email,
-                        Email = _googlePayload.Email,
-                        FirstName = _googlePayload.Name
+                        UserName = googlePayload.Email,
+                        Email = googlePayload.Email,
+                        FirstName = googlePayload.Name ?? "Google User"
                     };
+
                     var createResult = await _userManager.CreateAsync(user);
                     await _userManager.AddToRoleAsync(user, "Visitor");
+
                     if (!createResult.Succeeded)
                     {
-                        foreach (var e in createResult.Errors)
-                        {
-                            response.Errors.Add(e.Description);
-                        }
+                        response.Errors.AddRange(createResult.Errors.Select(e => e.Description));
                         response.IsSuccessful = false;
                         return response;
                     }
                 }
+
                 var roles = await _userManager.GetRolesAsync(user);
-                JwtRequestDto jwtRequest = new JwtRequestDto
+                var jwtResponse = _jwtRepository.GenerateAccessToken(new JwtRequestDto
                 {
                     User = user,
                     Roles = roles
-                };
-                var jwtResponse = _jwtRepository.GenerateAccessToken(jwtRequest);
-                if (string.IsNullOrEmpty(jwtResponse.Token))
+                });
+
+                if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.Token))
                 {
                     response.IsSuccessful = false;
                     response.Errors.Add("Access token generation failed");
-                    return response;
-                }
-
-                if (!jwtResponse.IsSuccessful)
-                {
-                    response.IsSuccessful = false;
                     response.Errors.AddRange(jwtResponse.Errors);
                     return response;
                 }
+
                 var refreshToken = _jwtRepository.GenerateRefreshToken();
-                if (!refreshToken.IsSuccessful)
+                if (!refreshToken.IsSuccessful || string.IsNullOrWhiteSpace(refreshToken.RefreshToken))
                 {
                     response.IsSuccessful = false;
+                    response.Errors.Add("Refresh token generation failed");
                     response.Errors.AddRange(refreshToken.Errors);
                     return response;
                 }
+
                 user.RefreshToken = refreshToken.RefreshToken;
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded)
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
                 {
                     response.IsSuccessful = false;
                     response.Errors.Add("Invalid Authentication");
@@ -113,16 +111,16 @@ namespace AliHaydarBase.Api.Core.Repositories
                 response.Token = jwtResponse.Token;
                 response.RefreshToken = refreshToken.RefreshToken;
                 response.IsSuccessful = true;
-                response.Errors = ["Ok"];
+                response.Errors = new List<string> { "Ok" };
                 return response;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                var error = e.Message;
                 response.IsSuccessful = false;
-                response.Errors.Add(error);
+                response.Errors.Add(e.Message);
                 return response;
             }
         }
+
     }
 }

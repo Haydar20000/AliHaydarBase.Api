@@ -12,9 +12,9 @@ namespace AliHaydarBase.Api.DTOs.Request
         [Required(ErrorMessage = DkString.EmailError01)]
         [EmailAddress]
         [Display(Name = DkString.Email)]
-        public string? Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = DkString.OtpError01)]
         [Display(Name = DkString.Otp)]
-        public string? Code { get; set; }
+        public string Code { get; set; } = string.Empty;
     }
 }
