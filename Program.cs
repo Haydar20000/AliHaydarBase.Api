@@ -1,41 +1,53 @@
+using AliHaydarBase.Api.Dependencies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Add Services from Dependencies\ServiceCollectionExtensions
+builder.Services.AddAliHaydarBaseServices(builder.Configuration);
+
+// Add Swagger services to the container.... Start
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+// Add Swagger services to the container.... End
+
+// Allow the app to use controllers
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    //app.UseWebAssemblyDebugging();
+    // Add Swagger services to the container.... Start
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    // Add Swagger services to the container.... End
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors("AllowWebClient");
+
+app.MapFallbackToFile("index.html");
+
+app.UseAntiforgery();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
