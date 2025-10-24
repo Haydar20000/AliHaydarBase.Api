@@ -71,8 +71,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuthRepository, AuthRepository>()
             .AddScoped<IExternalLoginRepository, ExternalLoginRepository>()
             .AddScoped<IEmailServicesRepository, EmailServicesRepository>()
-            .AddScoped<IJwtRepository, JwtRepository>();
-
+            .AddScoped<IJwtRepository, JwtRepository>()
+            .AddScoped<IAuditLoggerRepository, AuditLoggerRepository>();
         services.AddHttpClient();           // 📡 HTTP Client
         services.AddHttpContextAccessor();  // 📡 HTTP Context
 
