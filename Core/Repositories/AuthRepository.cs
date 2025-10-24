@@ -1,5 +1,6 @@
 
 using System.Net.Mail;
+using System.Security.Claims;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Mapper;
 using AliHaydarBase.Api.Core.Models;
@@ -7,6 +8,7 @@ using AliHaydarBase.Api.Dependencies;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace AliHaydarBase.Api.Core.Repositories
@@ -14,22 +16,27 @@ namespace AliHaydarBase.Api.Core.Repositories
     public class AuthRepository : Repository<User>, IAuthRepository
     {
         private readonly UserManager<User> _userManager;
-        private readonly IJwtRepository _jwtRepository;
+        private readonly IJwtRepository _jwt;
         private readonly IEmailServicesRepository _emailServices;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        private readonly IAuditLoggerRepository _auditLogger;
         public AuthRepository(AliHaydarDbContext context,
             UserManager<User> userManager,
             IJwtRepository jwtRepository,
             IEmailServicesRepository emailServices,
             IConfiguration configuration,
-            IUnitOfWork unitOfWork) : base(context)
+            IUnitOfWork unitOfWork, IAuditLoggerRepository auditLogger, IHttpContextAccessor httpContextAccessor) : base(context)
         {
             _userManager = userManager;
-            _jwtRepository = jwtRepository;
+            _jwt = jwtRepository;
             _emailServices = emailServices;
             _unitOfWork = unitOfWork;
             _configuration = configuration;
+            _auditLogger = auditLogger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<SystemResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request)
@@ -79,6 +86,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { request.Email });
             return response;
         }
 
@@ -110,7 +118,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            var jwtResponse = _jwtRepository.GenerateAccessToken(new JwtRequestDto
+            var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
                 User = user,
                 Roles = roles
@@ -123,7 +131,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            var refreshToken = _jwtRepository.GenerateRefreshToken();
+            var refreshToken = _jwt.GenerateRefreshToken();
             if (!refreshToken.IsSuccessful || string.IsNullOrWhiteSpace(refreshToken.RefreshToken))
             {
                 response.IsSuccessful = false;
@@ -145,6 +153,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             response.Token = jwtResponse.RefreshToken;
             response.RefreshToken = refreshToken.RefreshToken;
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { request.Email });
             return response;
         }
 
@@ -181,7 +190,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            var jwtResponse = _jwtRepository.GenerateAccessToken(new JwtRequestDto
+            var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
                 User = user,
                 Roles = roles
@@ -198,7 +207,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             // 🔄 Rotate refresh token
             tokenEntry.IsRevoked = true;
 
-            var refreshTokenResult = _jwtRepository.GenerateRefreshToken();
+            var refreshTokenResult = _jwt.GenerateRefreshToken();
             if (!refreshTokenResult.IsSuccessful || string.IsNullOrWhiteSpace(refreshTokenResult.RefreshToken))
             {
                 response.IsSuccessful = false;
@@ -220,6 +229,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             response.Token = jwtResponse.Token;
             response.RefreshToken = newToken.Token;
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
         public async Task<SystemResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -299,6 +309,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             error.Add("تم التسجيل بنجاح");
             response.Errors = error;
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
 
@@ -365,6 +376,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
 
@@ -401,6 +413,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
 
@@ -411,7 +424,7 @@ namespace AliHaydarBase.Api.Core.Repositories
 
             try
             {
-                var isValid = _jwtRepository.ReadJwtToken(token);
+                var isValid = _jwt.ReadJwtToken(token);
                 response.IsSuccessful = isValid;
                 response.Errors = new List<string> { isValid ? "ok" : "Not ok" };
                 return response;
@@ -456,6 +469,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
 
@@ -487,6 +501,7 @@ namespace AliHaydarBase.Api.Core.Repositories
 
             response.IsSuccessful = true;
             response.Errors = ["Device logged out successfully"];
+
             return response;
         }
 
@@ -529,6 +544,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             await _unitOfWork.Complete();
 
             response.IsSuccessful = true;
+
             response.Errors = ["All sessions revoked"];
             return response;
         }
@@ -544,7 +560,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            var isValid = _jwtRepository.IsTokenValid(request.Token);
+            var isValid = _jwt.IsTokenValid(request.Token);
             response.IsSuccessful = isValid;
             response.Errors = isValid ? [] : ["Token is invalid or expired"];
             return response;
@@ -574,5 +590,63 @@ namespace AliHaydarBase.Api.Core.Repositories
                 Reason = entry.IsRevoked ? "Revoked" : (entry.ExpiryTime < DateTime.UtcNow ? "Expired" : "Active")
             };
         }
+
+
+        public async Task<IEnumerable<ClaimDefinitionResponseDto>> GetAllClaimDefinitionsAsync()
+        {
+            var claims = await _unitOfWork.ClaimDefinitions.FindAsync(c => c.IsActive);
+
+            return claims.Select(c => new ClaimDefinitionResponseDto
+            {
+                Type = c.Type,
+                Description = c.Description,
+                Category = c.Category,
+                UiHint = c.UiHint,
+                Scope = c.Scope,
+                Group = c.Group,
+                IsVisibleToFrontend = c.IsVisibleToFrontend
+            });
+
+            /// we can use in flutter like this 
+            /// final response = await dio.get('/api/auth/claim-definitions');
+            /// final claims = response.data as List;
+
+        }
+
+        private async Task LogActionAsync(
+            string? userId,
+            string action,
+            string description,
+            object? metadata = null,
+            string? fallbackEmail = null)
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+
+            // 🌍 IP address
+            var ip = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+
+            // 📱 Device ID from header or claim
+            var deviceId = httpContext?.Request.Headers["X-Device-Id"].FirstOrDefault()
+                ?? httpContext?.User.FindFirst("DeviceId")?.Value
+                ?? "unknown";
+
+            // 🧠 Infer userId from token if missing
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                userId = httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? httpContext?.User.FindFirst("sub")?.Value;
+            }
+
+            // 📧 Fallback to email if still anonymous
+            if (string.IsNullOrWhiteSpace(userId) && !string.IsNullOrWhiteSpace(fallbackEmail))
+            {
+                var user = await _unitOfWork.User.GetByEmailAsync(fallbackEmail);
+                userId = user?.Id ?? "anonymous";
+            }
+
+            await _auditLogger.LogAsync(userId ?? "anonymous", action, description, ip, deviceId, metadata);
+        }
+
+
     }
 }

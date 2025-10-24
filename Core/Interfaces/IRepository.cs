@@ -11,6 +11,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
     {
         // To Find Object
         Task<TEntity> GetByIdAsync(Guid id);
+        Task<TEntity> GetByEmailAsync(string email);
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task<IEnumerable<TEntity>> FindAsync(Func<TEntity, bool> predicate);
         Task<bool> ExistsAsync(Guid id);

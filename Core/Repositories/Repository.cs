@@ -86,6 +86,16 @@ namespace AliHaydarBase.Api.Core.Repositories
             return entity;
         }
 
+        public async Task<TEntity> GetByEmailAsync(string email)
+        {
+            var entity = await _context.Set<TEntity>().FindAsync(email);
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"Entity of type {typeof(TEntity).Name} with email {email} not found.");
+            }
+            return entity;
+        }
+
         public async Task<TEntity> SingleOrDefault(Expression<Func<TEntity, bool>> predicate)
         {
             var entity = await Task.FromResult(_context.Set<TEntity>().SingleOrDefault(predicate));

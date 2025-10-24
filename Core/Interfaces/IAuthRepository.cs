@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
 
@@ -20,5 +21,6 @@ namespace AliHaydarBase.Api.Core.Interfaces
         Task<SystemResponseDto> LogoutAllDevicesAsync(RefreshTokenRequestDto request);
         JwtResponseDto ValidateToken(string Token);
         Task<RefreshTokenIntrospectionResponseDto> IntrospectRefreshTokenAsync(string token);
+        Task<IEnumerable<ClaimDefinitionResponseDto>> GetAllClaimDefinitionsAsync();
     }
 }

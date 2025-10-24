@@ -10,7 +10,8 @@ namespace AliHaydarBase.Api.Core.Interfaces
     {
         IUsersRepository User { get; }
         IRefreshTokenEntryRepository RefreshTokens { get; }
-
+        IClaimDefinitionsRepository ClaimDefinitions { get; }
+        IAuditLoggerRepository AuditLogger { get; } // IAuditLogger
         Task<int> Complete();
 
     }

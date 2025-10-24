@@ -73,6 +73,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IJwtRepository, JwtRepository>();
 
         services.AddHttpClient(); // 📡 HTTP Client
+        services.AddHttpContextAccessor(); // 📡 HTTP Context
 
         // 🌐 CORS Configuration
         var allowedOrigins = env.IsDevelopment()
