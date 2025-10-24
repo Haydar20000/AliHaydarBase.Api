@@ -1,33 +1,44 @@
+using AliHaydarBase.Api.Dependencies;
 using AliHaydarBase.Api.Endpoints;
-
+using AspNetCoreRateLimit;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
-// Modular DI with environment
+// 🧩 Modular DI with environment-specific configuration
 builder.Services.AddAliHaydarBaseServices(builder.Configuration, builder.Environment);
 
-// Swagger
+// 📘 Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-// Pipeline
+
+// 🛠️ Auto-apply EF Core migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AliHaydarDbContext>();
+    db.Database.Migrate(); // Applies any pending migrations
+}
+
+// 🚦 Middleware pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger();       // 📘 Swagger UI in dev
     app.UseSwaggerUI();
 }
 else
 {
-    app.UseExceptionHandler("/error");
-    app.UseHsts();
+    app.UseExceptionHandler("/error"); // 🧯 Global error handler
+    app.UseHsts();                     // 🔐 Enforce HTTPS in production
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowWebClient");
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseHttpsRedirection();       // 🔐 Redirect HTTP to HTTPS
+app.UseCors("AllowWebClient");   // 🌐 CORS policy for frontend
+app.UseIpRateLimiting();         // 🛡️ Protect sensitive endpoints from abuse
+app.UseAuthentication();         // 🔐 Validate JWTs and external logins
+app.UseAuthorization();          // ✅ Enforce access policies
 
-// Minimal API endpoints go here
-app.MapAuthEndpoints();
+// 🚀 Minimal API endpoints
+app.MapAuthEndpoints();          // 🔐 Auth routes (login, register, etc.)
 
-app.Run();
+app.Run(); // 🏁 Start the application

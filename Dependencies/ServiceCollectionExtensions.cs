@@ -3,6 +3,7 @@ using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.Core.Repositories;
 using AliHaydarBase.Api.Dependencies;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -72,8 +73,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<IEmailServicesRepository, EmailServicesRepository>()
             .AddScoped<IJwtRepository, JwtRepository>();
 
-        services.AddHttpClient(); // 📡 HTTP Client
-        services.AddHttpContextAccessor(); // 📡 HTTP Context
+        services.AddHttpClient();           // 📡 HTTP Client
+        services.AddHttpContextAccessor();  // 📡 HTTP Context
 
         // 🌐 CORS Configuration
         var allowedOrigins = env.IsDevelopment()
@@ -108,6 +109,12 @@ public static class ServiceCollectionExtensions
             // 👤 User settings
             options.User.RequireUniqueEmail = true;
         });
+
+        // 🛡️ Rate Limiting / Throttling
+        services.AddMemoryCache(); // Required for rate limiting
+        services.Configure<IpRateLimitOptions>(configuration.GetSection("IpRateLimiting"));
+        services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+        services.AddInMemoryRateLimiting();
 
         return services;
     }
