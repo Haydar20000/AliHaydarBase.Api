@@ -11,7 +11,7 @@ namespace AliHaydarBase.Api.DTOs.Response
         public List<string> Errors { get; set; } = [];
         public string Token { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
-        public string Username { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public List<string> Roles { get; set; } = new();
         public int Code { get; set; } = 0;
     }

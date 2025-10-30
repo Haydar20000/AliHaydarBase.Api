@@ -10,7 +10,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IAuthRepository
     {
-        Task<SystemResponseDto> RegisterAsync(RegisterRequestDto request);
+        Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
         Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
         Task<SystemResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request);
         Task<SystemResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request);

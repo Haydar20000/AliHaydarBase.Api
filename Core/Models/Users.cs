@@ -18,4 +18,7 @@ namespace AliHaydarBase.Api.Core.Models
         public DateTime RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+
+
 }

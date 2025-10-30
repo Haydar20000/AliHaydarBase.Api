@@ -1,6 +1,10 @@
 
+using System.ComponentModel.DataAnnotations;
 using AliHaydarBase.Api.Core.Interfaces;
+using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.DTOs.Request;
+using AliHaydarBase.Api.DTOs.Response;
+using Microsoft.AspNetCore.Identity;
 
 namespace AliHaydarBase.Api.Endpoints
 {
@@ -17,21 +21,76 @@ namespace AliHaydarBase.Api.Endpoints
                 return Results.Ok($"{z}     {key1 ?? "No Key"}");
             });
 
+            // Register User Endpoint
             group.MapPost("/register", async (RegisterRequestDto model, IAuthRepository repo) =>
             {
+                var context = new ValidationContext(model);
+                var results = new List<ValidationResult>();
+                if (!Validator.TryValidateObject(model, context, results, true))
+                {
+                    var errors = results.Select(r => r.ErrorMessage ?? "Invalid input").ToList();
+                    return Results.BadRequest(new AuthResponseDto
+                    {
+                        IsSuccessful = false,
+                        Errors = errors,
+                        Code = 422
+                    });
+                }
+
                 var response = await repo.RegisterAsync(model);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.BadRequest(response);
             });
 
-            group.MapPost("/login", async (LoginRequestDto model, IAuthRepository repo) =>
+            group.MapPost("/login", async (
+            LoginRequestDto model,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IJwtRepository jwtRepo) =>
             {
-                var response = await repo.LoginAsync(model);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
+                var user = await userManager.FindByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    return Results.Json(new AuthResponseDto
+                    {
+                        IsSuccessful = false,
+                        Errors = ["Invalid email or password"],
+                        Code = 401
+                    }, statusCode: 401);
+                }
+                var roles = await userManager.GetRolesAsync(user);
+
+                var result = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                if (!result.Succeeded)
+                {
+                    return Results.Json(new AuthResponseDto
+                    {
+                        IsSuccessful = false,
+                        Errors = ["Invalid email or password"],
+                        Code = 401
+                    }, statusCode: 401);
+                }
+                var request = new JwtRequestDto
+                {
+                    User = user,
+                    Roles = roles
+                };
+                var token = jwtRepo.GenerateAccessToken(request);
+
+                var response = new AuthResponseDto
+                {
+                    IsSuccessful = true,
+                    Token = token.Token ?? string.Empty,
+                    RefreshToken = token.RefreshToken ?? string.Empty,
+                    Roles = [.. roles],
+                    Code = 200
+                };
+
+                return Results.Ok(response);
             });
+
 
             group.MapPost("/validate", (string token, IAuthRepository repo) =>
             {
@@ -81,13 +140,13 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.BadRequest(response);
             });
 
-            group.MapPost("/google-login", async (GoogleLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
-            {
-                var response = await externalLogin.GoogleLogin(dto);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.BadRequest(response);
-            });
+            // group.MapPost("/google-login", async (GoogleLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
+            // {
+            //     var response = await externalLogin.GoogleLogin(dto);
+            //     return response.IsSuccessful
+            //         ? Results.Ok(response)
+            //         : Results.BadRequest(response);
+            // });
 
             group.MapPost("/logout-device", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>
             {

@@ -31,7 +31,7 @@ namespace AliHaydarBase.Api.Constants.Text
         public const String IdPhoneNumber = "رقم الهاتف في استمارة الانتماء";
         public const String ConfirmEmail = "تفعيل البريد الاكتروني";
         public const String ReSendConfirmOtp = "اعادة ارسال رمز التفعيل";
-
+        public const String EmailSubject = "تفعيل الاشتراك";
 
         // Comments 
         public const String RegisterComment01 = "كلمة السر يجب ان تكون باللغة الانكليزية ولاتقل عن 8 احرف مع حرف واحد كبير على الاقل";
@@ -51,5 +51,8 @@ namespace AliHaydarBase.Api.Constants.Text
         public const String JobTitleError01 = "يجب كتابة المهنة رجاءا";
         public const String PhoneNumberError01 = "يجب كتابة رقم الهاتف رجاءا";
         public const String OtpError01 = "يجب كتابة كود التفعيل رجاءا";
+        public const String GoogleRegisterError01 = "استخدم حساب كوكل للتسجيل الدخول رجاءا";
+        public const String UserExistError = "انت مشترك سابقا يرجى تسجيل الدخول";
+        public const String InvalidRequestError = "حدث خطأ ما يرجى المحاولة مرة اخرى";
     }
 }

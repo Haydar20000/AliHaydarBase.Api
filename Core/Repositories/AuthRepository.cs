@@ -10,6 +10,7 @@ using AliHaydarBase.Api.DTOs.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using AliHaydarBase.Api.Constants.Text;
 
 namespace AliHaydarBase.Api.Core.Repositories
 {
@@ -232,84 +233,78 @@ namespace AliHaydarBase.Api.Core.Repositories
             await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
-        public async Task<SystemResponseDto> RegisterAsync(RegisterRequestDto request)
+
+        /// <summary>
+        ///  Register a new user
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
         {
-            var response = new SystemResponseDto();
-            var error = new List<string>();
+            var response = new AuthResponseDto();
 
             if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
-                error.Add("Invalid request or missing email/password.");
-                response.Errors = error;
                 response.IsSuccessful = false;
+                response.Errors.Add(DkString.InvalidRequestError);
+                response.Code = 400;
                 return response;
             }
 
-            var alreadyUser = await _userManager.FindByEmailAsync(request.Email);
-            if (alreadyUser != null)
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser is not null)
             {
-                if (alreadyUser.PasswordHash is null)
+                if (existingUser.PasswordHash is null)
                 {
-                    error.Add("Use Google Sign In");
-                    response.Errors = error;
-                    response.IsSuccessful = false;
-                    return response;
+                    response.Errors.Add(DkString.GoogleRegisterError01);
+                }
+                else
+                {
+                    response.Errors.Add(DkString.UserExistError);
                 }
 
-                error.Add("انت مشترك سابقا يرجى تسجيل الدخول");
-                response.Errors = error;
                 response.IsSuccessful = false;
+                response.Code = 409;
                 return response;
             }
 
-            var user = AppMapper.MapUserFromRegisterRequest(request);
+            var user = new User
+            {
+                Email = request.Email,
+                UserName = request.Email,
+            };
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                response.Errors = result.Errors.Select(e => e.Description);
                 response.IsSuccessful = false;
+                response.Errors.AddRange(result.Errors.Select(e => e.Description));
+                response.Code = 422;
                 return response;
             }
 
             await _userManager.AddToRoleAsync(user, "Visitor");
 
-            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
-            {
-                error.Add("User profile is incomplete.");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var emails = new List<MailAddress> { new MailAddress(user.Email) };
-            var variables = new List<string>
-            {
-                user.FullName,
-                emailConfirmationToken,
-                "لتفعيل الاشتراك"
-            };
-
+            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailRequest = new EmailRequestDto
             {
-                Receptors = emails,
-                Subject = "تفعيل الاشنراك",
-                MessageVariables = variables
+                Receptors = [new MailAddress(user.Email)],
+                Subject = DkString.EmailSubject,
+                MessageVariables = [user.FullName!, emailToken, DkString.EmailSubject]
             };
 
             var emailResponse = await _emailServices.ConfirmEmailTemp(emailRequest);
             if (!emailResponse.IsSuccessful)
             {
                 response.IsSuccessful = false;
-                response.Errors = emailResponse.Errors;
+                response.Errors.AddRange(emailResponse.Errors);
+                response.Code = 500;
                 return response;
             }
 
-            error.Add("تم التسجيل بنجاح");
-            response.Errors = error;
+            response.UserId = user.Id;
+            response.Roles = [.. await _userManager.GetRolesAsync(user)];
             response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
+            response.Code = 200;
             return response;
         }
 
