@@ -32,7 +32,7 @@ namespace AliHaydarBase.Api.Endpoints
                     return Results.BadRequest(new AuthResponseDto
                     {
                         IsSuccessful = false,
-                        Errors = errors,
+                        Errors = errors,                        
                         Code = 422
                     });
                 }

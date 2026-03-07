@@ -79,19 +79,32 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();  // 📡 HTTP Context
 
         // 🌐 CORS Configuration
-        var allowedOrigins = env.IsDevelopment()
-            ? new[] { "http://localhost:5000" }
-            : new[] { "https://your-production-client.com" };
-
         services.AddCors(options =>
-        {
-            options.AddPolicy("AllowWebClient", policy =>
-            {
-                policy.WithOrigins(allowedOrigins)
-                      .AllowAnyHeader()
-                      .AllowAnyMethod();
-            });
-        });
+{
+    options.AddPolicy("AllowDevClient", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(origin =>
+                origin.StartsWith("http://localhost") ||
+                origin.StartsWith("http://127.0.0.1"))
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+        var allowedOrigins = env.IsDevelopment()
+    ? new[] { "http://localhost:57636", "http://192.168.0.101:5164" }
+    : new[] { "https://your-production-client.com" };
+
+// services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowWebClient", policy =>
+//     {
+//         policy.WithOrigins(allowedOrigins)
+//               .AllowAnyHeader()
+//               .AllowAnyMethod();
+//     });
+// });
 
         services.Configure<IdentityOptions>(options =>
         {

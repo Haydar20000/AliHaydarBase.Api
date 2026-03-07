@@ -10,6 +10,7 @@ builder.Services.AddAliHaydarBaseServices(builder.Configuration, builder.Environ
 // 📘 Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.WebHost.UseUrls("http://0.0.0.0:5164");
 
 var app = builder.Build();
 
