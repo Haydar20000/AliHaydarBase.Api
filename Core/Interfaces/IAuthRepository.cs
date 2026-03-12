@@ -12,9 +12,9 @@ namespace AliHaydarBase.Api.Core.Interfaces
     {
         Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
         Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
-        Task<SystemResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request);
-        Task<SystemResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request);
-        Task<SystemResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
+        Task<AuthResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request);
+        Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request);
+        Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
         Task<SystemResponseDto> ResendEmailConfirmation(ResendEmailConfirmationRequestDto request);
         Task<AuthResponseDto> LoginWithRefreshToken(RefreshTokenRequestDto request);
         Task<SystemResponseDto> LogoutDeviceAsync(RefreshTokenRequestDto request);

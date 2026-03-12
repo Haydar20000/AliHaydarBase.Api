@@ -3,3 +3,7 @@ Jwt:Issuer = iraqpharmacistsassociation.org
 Jwt:Audience = iraqpharmacistsassociation.org.Users
 
 Server=localhost\SQLEXPRESS;Database=master;Trusted_Connection=True;
+
+
+// Response code 
+1001 = the OTP code is expire or its not match 

@@ -40,10 +40,10 @@ namespace AliHaydarBase.Api.Core.Repositories
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<SystemResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request)
+        public async Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request)
         {
             var error = new List<string>();
-            var response = new SystemResponseDto();
+            var response = new AuthResponseDto();
 
             if (request is null || string.IsNullOrWhiteSpace(request.Email))
             {
@@ -53,8 +53,8 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is null || string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
+            var user = await _userManager.FindByEmailAsync(request.Email);            
+            if (user is null || string.IsNullOrWhiteSpace(user.Email) )
             {
                 error.Add("User not found or profile incomplete.");
                 response.Errors = error;
@@ -82,7 +82,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             if (!emailResponse.IsSuccessful)
             {
                 response.IsSuccessful = false;
-                response.Errors = emailResponse.Errors;
+                response.Errors = [.. emailResponse.Errors];
                 return response;
             }
 
@@ -375,10 +375,10 @@ namespace AliHaydarBase.Api.Core.Repositories
             return response;
         }
 
-        public async Task<SystemResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
+        public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
         {
             var error = new List<string>();
-            var response = new SystemResponseDto();
+            var response = new AuthResponseDto();
 
             if (string.IsNullOrWhiteSpace(request.Email) ||
                 string.IsNullOrWhiteSpace(request.Password) ||
@@ -402,7 +402,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             var result = await _userManager.ResetPasswordAsync(user, request.Otp, request.Password);
             if (!result.Succeeded)
             {
-                response.Errors = result.Errors.Select(e => e.Description);
+                response.Errors = [.. result.Errors.Select(e => e.Description)];
                 response.IsSuccessful = false;
                 return response;
             }
@@ -433,10 +433,10 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
         }
 
-        public async Task<SystemResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request)
+        public async Task<AuthResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request)
         {
             var error = new List<string>();
-            var response = new SystemResponseDto();
+            var response = new AuthResponseDto();
 
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
             {
@@ -458,8 +458,9 @@ namespace AliHaydarBase.Api.Core.Repositories
             var result = await _userManager.ConfirmEmailAsync(user, request.Code);
             if (!result.Succeeded)
             {
-                response.Errors = result.Errors.Select(e => e.Description);
+                response.Errors = [.. result.Errors.Select(e => e.Description)];
                 response.IsSuccessful = false;
+                response.Code = 1001; // Custom code for email verification OTP not matching or expired
                 return response;
             }
 

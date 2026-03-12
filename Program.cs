@@ -10,7 +10,7 @@ builder.Services.AddAliHaydarBaseServices(builder.Configuration, builder.Environ
 // 📘 Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.WebHost.UseUrls("http://0.0.0.0:5164");
+
 
 var app = builder.Build();
 
@@ -33,8 +33,10 @@ else
     app.UseHsts();                     // 🔐 Enforce HTTPS in production
 }
 
+app.Urls.Add("http://0.0.0.0:5164");
+
 app.UseHttpsRedirection();       // 🔐 Redirect HTTP to HTTPS
-app.UseCors("AllowWebClient");   // 🌐 CORS policy for frontend
+app.UseCors("AllowFlutter");   // 🌐 CORS policy for frontend
 app.UseIpRateLimiting();         // 🛡️ Protect sensitive endpoints from abuse
 app.UseAuthentication();         // 🔐 Validate JWTs and external logins
 app.UseAuthorization();          // ✅ Enforce access policies

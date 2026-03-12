@@ -79,19 +79,25 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();  // 📡 HTTP Context
 
         // 🌐 CORS Configuration
-        services.AddCors(options =>
+//         services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowDevClient", policy =>
+//     {
+//         policy
+//             .SetIsOriginAllowed(origin =>
+//                 origin.StartsWith("http://localhost") ||
+//                 origin.StartsWith("http://127.0.0.1"))
+//             .AllowAnyHeader()
+//             .AllowAnyMethod();
+//     });
+// });
+services.AddCors(options =>
 {
-    options.AddPolicy("AllowDevClient", policy =>
-    {
-        policy
-            .SetIsOriginAllowed(origin =>
-                origin.StartsWith("http://localhost") ||
-                origin.StartsWith("http://127.0.0.1"))
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowFlutter",
+        policy => policy.WithOrigins("http://localhost:5000", "http://192.168.0.101:5164") // Your flutter port
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
-
         var allowedOrigins = env.IsDevelopment()
     ? new[] { "http://localhost:57636", "http://192.168.0.101:5164" }
     : new[] { "https://your-production-client.com" };
