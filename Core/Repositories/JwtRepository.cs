@@ -28,7 +28,16 @@ namespace AliHaydarBase.Api.Core.Repositories
             try
             {
                 var credentials = GetSigningCredentials();
+
+                // Build claims
                 var claims = BuildClaims(request.User, request.Roles);
+
+                // Add deviceId claim if present
+                if (!string.IsNullOrWhiteSpace(request.DeviceId))
+                {
+                    claims.Add(new Claim("device_id", request.DeviceId));
+                }
+
                 var token = CreateJwtToken(credentials, claims);
 
                 return new JwtResponseDto
@@ -47,6 +56,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 };
             }
         }
+
 
         public JwtResponseDto GenerateRefreshToken()
         {
@@ -84,25 +94,32 @@ namespace AliHaydarBase.Api.Core.Repositories
             return new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         }
 
-        private List<Claim> BuildClaims(User user, IList<string> roles)
+        private List<Claim> BuildClaims(User user, IList<string> roles, string? deviceId = null)
         {
             var now = DateTime.UtcNow;
             var expiry = now.AddMinutes(30);
 
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-                new Claim("email_verified", user.EmailConfirmed.ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
-                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
-                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiry).ToUnixTimeSeconds().ToString())
-            };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+        new Claim("email_verified", user.EmailConfirmed.ToString()),
+        new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
+        new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(now).ToUnixTimeSeconds().ToString()),
+        new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiry).ToUnixTimeSeconds().ToString())
+    };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-            return claims;
 
+            // 🔐 Add deviceId claim if provided
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                claims.Add(new Claim("device_id", deviceId));
+            }
+
+            return claims;
         }
+
 
         public bool IsTokenValid(string token)
         {

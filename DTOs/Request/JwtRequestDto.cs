@@ -10,5 +10,6 @@ namespace AliHaydarBase.Api.DTOs.Request
     {
         public required User User { get; set; }
         public required IList<string> Roles { get; set; }
+        public string? DeviceId { get; set; }   // optional, for binding tokens to device
     }
 }

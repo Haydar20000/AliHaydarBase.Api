@@ -19,7 +19,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             _configuration = configuration;
             _hostEnvironment = hostEnvironment;
         }
-        public async Task<SystemResponseDto> ConfirmEmailTemp(EmailRequestDto request)
+        public async Task<AuthResponseDto> ConfirmEmailTemp(EmailRequestDto request)
         {
             try
             {
@@ -35,12 +35,12 @@ namespace AliHaydarBase.Api.Core.Repositories
 
 
                 request.Body = body;
-                SystemResponseDto responseDto = await SendEmailAsync(request);
+                AuthResponseDto responseDto = await SendEmailAsync(request);
                 return responseDto;
             }
             catch (System.Exception e)
             {
-                var response = new SystemResponseDto();
+                var response = new AuthResponseDto();
                 response.IsSuccessful = false;
                 response.Errors.Append(e.Message);
                 return response;
@@ -48,9 +48,9 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
         }
 
-        public async Task<SystemResponseDto> SendEmailAsync(EmailRequestDto request)
+        public async Task<AuthResponseDto> SendEmailAsync(EmailRequestDto request)
         {
-            var response = new SystemResponseDto();
+            var response = new AuthResponseDto();
             try
             {
                 var _email = _configuration.GetValue<string>("EmailService:Email");

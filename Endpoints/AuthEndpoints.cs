@@ -32,12 +32,38 @@ namespace AliHaydarBase.Api.Endpoints
                     return Results.BadRequest(new AuthResponseDto
                     {
                         IsSuccessful = false,
-                        Errors = errors,                        
+                        Errors = errors,
                         Code = 422
                     });
                 }
 
                 var response = await repo.RegisterAsync(model);
+                return response.IsSuccessful
+                    ? Results.Ok(response)
+                    : Results.BadRequest(response);
+            });
+            /// Verify Email Endpoint
+            group.MapPost("/verifyEmail", async (VerifyEmailRequestDto dto, IAuthRepository repo) =>
+                        {
+                            var response = await repo.VerifyEmailAsync(dto);
+                            return response.IsSuccessful
+                                ? Results.Ok(response)
+                                : Results.BadRequest(response);
+                        });
+
+            /// Forgot Password Endpoint
+            group.MapPost("/forgotPassword", async (ForgotPasswordRequestDto dto, IAuthRepository repo) =>
+            {
+                var response = await repo.ForgotPasswordAsync(dto);
+                return response.IsSuccessful
+                    ? Results.Ok(response)
+                    : Results.BadRequest(response);
+            });
+
+            /// Reset Password Endpoint
+            group.MapPost("/resetPassword", async (ResetPasswordRequestDto dto, IAuthRepository repo) =>
+            {
+                var response = await repo.ResetPasswordAsync(dto);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.BadRequest(response);
@@ -108,29 +134,6 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
             });
 
-            group.MapPost("/verifyEmail", async (VerifyEmailRequestDto dto, IAuthRepository repo) =>
-            {
-                var response = await repo.VerifyEmailAsync(dto);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.BadRequest(response);
-            });
-
-            group.MapPost("/forgotPassword", async (ForgotPasswordRequestDto dto, IAuthRepository repo) =>
-            {
-                var response = await repo.ForgotPasswordAsync(dto);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.BadRequest(response);
-            });
-
-            group.MapPost("/resetPassword", async (ResetPasswordRequestDto dto, IAuthRepository repo) =>
-            {
-                var response = await repo.ResetPasswordAsync(dto);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.BadRequest(response);
-            });
 
             group.MapPost("/resendEmailConfirmation", async (ResendEmailConfirmationRequestDto dto, IAuthRepository repo) =>
             {
@@ -140,13 +143,14 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.BadRequest(response);
             });
 
-            // group.MapPost("/google-login", async (GoogleLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
-            // {
-            //     var response = await externalLogin.GoogleLogin(dto);
-            //     return response.IsSuccessful
-            //         ? Results.Ok(response)
-            //         : Results.BadRequest(response);
-            // });
+            group.MapPost("/external-login", async (ExternalLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
+            {
+                var response = await externalLogin.Login(dto);
+                return response.IsSuccessful
+                    ? Results.Ok(response)
+                    : Results.BadRequest(response);
+            });
+
 
             group.MapPost("/logout-device", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>
             {

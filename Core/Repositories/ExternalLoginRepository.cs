@@ -21,11 +21,25 @@ namespace AliHaydarBase.Api.Core.Repositories
             _userManager = userManager;
             _jwtRepository = jwtRepository;
         }
-        public async Task<AuthResponseDto> GoogleLogin(GoogleLoginRequestDto request)
+        public async Task<AuthResponseDto> Login(ExternalLoginRequestDto request)
+        {
+            return request.Provider switch
+            {
+                "Google" => await GoogleLogin(request.IdToken, request.DeviceId),
+                // "Facebook" => await FacebookLogin(request.IdToken, request.DeviceId),
+                //"Apple" => await AppleLogin(request.IdToken, request.DeviceId),
+                _ => new AuthResponseDto
+                {
+                    IsSuccessful = false,
+                    Errors = new List<string> { "Unsupported provider" }
+                }
+            };
+        }
+        public async Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId)
         {
             var response = new AuthResponseDto();
 
-            if (string.IsNullOrWhiteSpace(request.idToken))
+            if (string.IsNullOrWhiteSpace(idToken))
             {
                 response.Errors.Add("Invalid Authentication");
                 response.IsSuccessful = false;
@@ -44,7 +58,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
                 };
 
-                var googlePayload = await GoogleJsonWebSignature.ValidateAsync(request.idToken, settings);
+                var googlePayload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
                 if (googlePayload == null || string.IsNullOrWhiteSpace(googlePayload.Email))
                 {
                     response.Errors.Add("Invalid Authentication");
@@ -77,7 +91,8 @@ namespace AliHaydarBase.Api.Core.Repositories
                 var jwtResponse = _jwtRepository.GenerateAccessToken(new JwtRequestDto
                 {
                     User = user,
-                    Roles = roles
+                    Roles = roles,
+                    DeviceId = deviceId // 🔐 include device binding if you want
                 });
 
                 if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.Token))

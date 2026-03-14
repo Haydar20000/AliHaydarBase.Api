@@ -9,8 +9,8 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IEmailServicesRepository
     {
-        Task<SystemResponseDto> SendEmailAsync(EmailRequestDto request);
+        Task<AuthResponseDto> SendEmailAsync(EmailRequestDto request);
 
-        Task<SystemResponseDto> ConfirmEmailTemp(EmailRequestDto request);
+        Task<AuthResponseDto> ConfirmEmailTemp(EmailRequestDto request);
     }
 }

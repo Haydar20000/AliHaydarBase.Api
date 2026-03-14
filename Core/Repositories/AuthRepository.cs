@@ -2,14 +2,11 @@
 using System.Net.Mail;
 using System.Security.Claims;
 using AliHaydarBase.Api.Core.Interfaces;
-using AliHaydarBase.Api.Core.Mapper;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.Dependencies;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using AliHaydarBase.Api.Constants.Text;
 
 namespace AliHaydarBase.Api.Core.Repositories
@@ -39,6 +36,85 @@ namespace AliHaydarBase.Api.Core.Repositories
             _auditLogger = auditLogger;
             _httpContextAccessor = httpContextAccessor;
         }
+        /// <summary> // Finish
+        ///  Registers a new user by creating an account with the provided email and password, assigning a default role, and sending an email confirmation link.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
+        {
+            var response = new AuthResponseDto();
+
+            if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                response.IsSuccessful = false;
+                response.Errors.Add(DkString.InvalidRequestError);
+                response.Code = 400;
+                return response;
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser is not null)
+            {
+                if (existingUser.PasswordHash is null)
+                {
+                    response.Errors.Add(DkString.GoogleRegisterError01);
+                }
+                else
+                {
+                    response.Errors.Add(DkString.UserExistError);
+                }
+
+                response.IsSuccessful = false;
+                response.Code = 409;
+                return response;
+            }
+
+            var user = new User
+            {
+                Email = request.Email,
+                UserName = request.Email,
+            };
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+                response.IsSuccessful = false;
+                response.Errors.AddRange(result.Errors.Select(e => e.Description));
+                response.Code = 422;
+                return response;
+            }
+
+            await _userManager.AddToRoleAsync(user, "Visitor");
+
+            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var emailRequest = new EmailRequestDto
+            {
+                Receptors = [new MailAddress(user.Email)],
+                Subject = DkString.EmailSubject,
+                MessageVariables = [user.FullName!, emailToken, DkString.EmailSubject]
+            };
+
+            var emailResponse = await _emailServices.ConfirmEmailTemp(emailRequest);
+            if (!emailResponse.IsSuccessful)
+            {
+                response.IsSuccessful = false;
+                response.Errors.AddRange(emailResponse.Errors);
+                response.Code = 500;
+                return response;
+            }
+
+            response.UserId = user.Id;
+            response.Roles = [.. await _userManager.GetRolesAsync(user)];
+            response.IsSuccessful = true;
+            response.Code = 200;
+            return response;
+        }
+
+        /// <summary> // Finish 
+        /// Initiates the forgot password process by generating a reset token and sending it via email to the user.
+        /// </summary>
+        /// <param name="request">The request containing the user's email.</param>
+        /// <returns>An AuthResponseDto indicating the success or failure of the operation.</returns>
 
         public async Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request)
         {
@@ -53,8 +129,8 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            var user = await _userManager.FindByEmailAsync(request.Email);            
-            if (user is null || string.IsNullOrWhiteSpace(user.Email) )
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is null || string.IsNullOrWhiteSpace(user.Email))
             {
                 error.Add("User not found or profile incomplete.");
                 response.Errors = error;
@@ -88,6 +164,118 @@ namespace AliHaydarBase.Api.Core.Repositories
 
             response.IsSuccessful = true;
             await LogActionAsync(user.Id, "Login", "User logged in", new { request.Email });
+            return response;
+        }
+        /// <summary> // Finish
+        /// Resends the email confirmation link to the user if their email is not yet confirmed, allowing them to complete the registration process.
+        /// </summary>
+        /// <param name="request">The request containing the user's email.</param>
+        /// <returns>A response indicating the success or failure of the operation.</returns>
+        public async Task<SystemResponseDto> ResendEmailConfirmation(ResendEmailConfirmationRequestDto request)
+        {
+            var error = new List<string>();
+            var response = new SystemResponseDto();
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                error.Add("Email is required.");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                error.Add("Invalid Request");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            if (user.EmailConfirmed)
+            {
+                error.Add("Email Already Confirmed");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
+            {
+                error.Add("User profile is incomplete.");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var emails = new List<MailAddress> { new MailAddress(user.Email) };
+            var variables = new List<string>
+            {
+                user.FullName,
+                token,
+                "لتفعيل الاشتراك"
+            };
+
+            var emailRequest = new EmailRequestDto
+            {
+                Receptors = emails,
+                Subject = "تفعيل الاشنراك",
+                MessageVariables = variables
+            };
+
+            var emailResponse = await _emailServices.ConfirmEmailTemp(emailRequest);
+            if (!emailResponse.IsSuccessful)
+            {
+                response.IsSuccessful = false;
+                response.Errors = emailResponse.Errors;
+                return response;
+            }
+
+            response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
+            return response;
+        }
+        /// <summary> // Finish
+        /// Resets the user's password using the provided email, new password, and OTP token. Validates the input, checks the user's existence, and updates the password if the OTP is valid.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
+        {
+            var error = new List<string>();
+            var response = new AuthResponseDto();
+
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.Otp))
+            {
+                error.Add("Email, password, and OTP are required.");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                error.Add("Invalid Request");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Otp, request.Password);
+            if (!result.Succeeded)
+            {
+                response.Errors = result.Errors.Select(e => e.Description).ToList();
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            response.IsSuccessful = true;
+            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
 
@@ -233,185 +421,6 @@ namespace AliHaydarBase.Api.Core.Repositories
             await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
-
-        /// <summary>
-        ///  Register a new user
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
-        {
-            var response = new AuthResponseDto();
-
-            if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-            {
-                response.IsSuccessful = false;
-                response.Errors.Add(DkString.InvalidRequestError);
-                response.Code = 400;
-                return response;
-            }
-
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
-            if (existingUser is not null)
-            {
-                if (existingUser.PasswordHash is null)
-                {
-                    response.Errors.Add(DkString.GoogleRegisterError01);
-                }
-                else
-                {
-                    response.Errors.Add(DkString.UserExistError);
-                }
-
-                response.IsSuccessful = false;
-                response.Code = 409;
-                return response;
-            }
-
-            var user = new User
-            {
-                Email = request.Email,
-                UserName = request.Email,
-            };
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (!result.Succeeded)
-            {
-                response.IsSuccessful = false;
-                response.Errors.AddRange(result.Errors.Select(e => e.Description));
-                response.Code = 422;
-                return response;
-            }
-
-            await _userManager.AddToRoleAsync(user, "Visitor");
-
-            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var emailRequest = new EmailRequestDto
-            {
-                Receptors = [new MailAddress(user.Email)],
-                Subject = DkString.EmailSubject,
-                MessageVariables = [user.FullName!, emailToken, DkString.EmailSubject]
-            };
-
-            var emailResponse = await _emailServices.ConfirmEmailTemp(emailRequest);
-            if (!emailResponse.IsSuccessful)
-            {
-                response.IsSuccessful = false;
-                response.Errors.AddRange(emailResponse.Errors);
-                response.Code = 500;
-                return response;
-            }
-
-            response.UserId = user.Id;
-            response.Roles = [.. await _userManager.GetRolesAsync(user)];
-            response.IsSuccessful = true;
-            response.Code = 200;
-            return response;
-        }
-
-        public async Task<SystemResponseDto> ResendEmailConfirmation(ResendEmailConfirmationRequestDto request)
-        {
-            var error = new List<string>();
-            var response = new SystemResponseDto();
-
-            if (string.IsNullOrWhiteSpace(request.Email))
-            {
-                error.Add("Email is required.");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is null)
-            {
-                error.Add("Invalid Request");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            if (user.EmailConfirmed)
-            {
-                error.Add("Email Already Confirmed");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
-            {
-                error.Add("User profile is incomplete.");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var emails = new List<MailAddress> { new MailAddress(user.Email) };
-            var variables = new List<string>
-            {
-                user.FullName,
-                token,
-                "لتفعيل الاشتراك"
-            };
-
-            var emailRequest = new EmailRequestDto
-            {
-                Receptors = emails,
-                Subject = "تفعيل الاشنراك",
-                MessageVariables = variables
-            };
-
-            var emailResponse = await _emailServices.ConfirmEmailTemp(emailRequest);
-            if (!emailResponse.IsSuccessful)
-            {
-                response.IsSuccessful = false;
-                response.Errors = emailResponse.Errors;
-                return response;
-            }
-
-            response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
-            return response;
-        }
-
-        public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
-        {
-            var error = new List<string>();
-            var response = new AuthResponseDto();
-
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password) ||
-                string.IsNullOrWhiteSpace(request.Otp))
-            {
-                error.Add("Email, password, and OTP are required.");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is null)
-            {
-                error.Add("Invalid Request");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var result = await _userManager.ResetPasswordAsync(user, request.Otp, request.Password);
-            if (!result.Succeeded)
-            {
-                response.Errors = [.. result.Errors.Select(e => e.Description)];
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
-            return response;
-        }
-
         public JwtResponseDto ValidateToken(string token)
         {
             var response = new JwtResponseDto();
@@ -609,12 +618,7 @@ namespace AliHaydarBase.Api.Core.Repositories
 
         }
 
-        private async Task LogActionAsync(
-            string? userId,
-            string action,
-            string description,
-            object? metadata = null,
-            string? fallbackEmail = null)
+        private async Task LogActionAsync(string? userId, string action, string description, object? metadata = null, string? fallbackEmail = null)
         {
             var httpContext = _httpContextAccessor.HttpContext;
 
