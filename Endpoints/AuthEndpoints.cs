@@ -69,53 +69,24 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.BadRequest(response);
             });
 
-            group.MapPost("/login", async (
-            LoginRequestDto model,
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            IJwtRepository jwtRepo) =>
+            /// External Login Endpoint Finish Google 
+            group.MapPost("/external-login", async (ExternalLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
+                       {
+                           var response = await externalLogin.Login(dto);
+                           return response.IsSuccessful
+                               ? Results.Ok(response)
+                               : Results.BadRequest(response);
+                       });
+
+            // Login Endpoint Email and Password
+            group.MapPost("/login", async (LoginRequestDto request, IAuthRepository repo) =>
             {
-                var user = await userManager.FindByEmailAsync(model.Email);
-
-                if (user == null)
-                {
-                    return Results.Json(new AuthResponseDto
-                    {
-                        IsSuccessful = false,
-                        Errors = ["Invalid email or password"],
-                        Code = 401
-                    }, statusCode: 401);
-                }
-                var roles = await userManager.GetRolesAsync(user);
-
-                var result = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-                if (!result.Succeeded)
-                {
-                    return Results.Json(new AuthResponseDto
-                    {
-                        IsSuccessful = false,
-                        Errors = ["Invalid email or password"],
-                        Code = 401
-                    }, statusCode: 401);
-                }
-                var request = new JwtRequestDto
-                {
-                    User = user,
-                    Roles = roles
-                };
-                var token = jwtRepo.GenerateAccessToken(request);
-
-                var response = new AuthResponseDto
-                {
-                    IsSuccessful = true,
-                    Token = token.Token ?? string.Empty,
-                    RefreshToken = token.RefreshToken ?? string.Empty,
-                    Roles = [.. roles],
-                    Code = 200
-                };
-
-                return Results.Ok(response);
+                var response = await repo.LoginAsync(request);
+                return response.IsSuccessful
+                    ? Results.Ok(response)
+                    : Results.BadRequest(response);
             });
+
 
 
             group.MapPost("/validate", (string token, IAuthRepository repo) =>
@@ -143,13 +114,6 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.BadRequest(response);
             });
 
-            group.MapPost("/external-login", async (ExternalLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
-            {
-                var response = await externalLogin.Login(dto);
-                return response.IsSuccessful
-                    ? Results.Ok(response)
-                    : Results.BadRequest(response);
-            });
 
 
             group.MapPost("/logout-device", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>

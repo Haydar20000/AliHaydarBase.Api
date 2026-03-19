@@ -14,12 +14,14 @@ namespace AliHaydarBase.Api.Core.Repositories
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
         private readonly IJwtRepository _jwtRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ExternalLoginRepository(IConfiguration configuration, UserManager<User> userManager, IJwtRepository jwtRepository)
+        public ExternalLoginRepository(IConfiguration configuration, UserManager<User> userManager, IJwtRepository jwtRepository, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _userManager = userManager;
             _jwtRepository = jwtRepository;
+            _unitOfWork = unitOfWork;
         }
         public async Task<AuthResponseDto> Login(ExternalLoginRequestDto request)
         {
@@ -35,6 +37,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 }
             };
         }
+
         public async Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId)
         {
             var response = new AuthResponseDto();
@@ -48,14 +51,11 @@ namespace AliHaydarBase.Api.Core.Repositories
 
             try
             {
+                // 1️⃣ Validate Google token
+                var audience = _configuration.GetSection("Google")["Web1"];
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = new List<string>
-            {
-                _configuration["Google:ClientId"] ?? string.Empty,
-                _configuration["Google:ANDROIDd"] ?? string.Empty,
-                _configuration["Google:Web"] ?? string.Empty
-            }
+                    Audience = new[] { audience }
                 };
 
                 var googlePayload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
@@ -66,6 +66,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                     return response;
                 }
 
+                // 2️⃣ Find or create user
                 var user = await _userManager.FindByEmailAsync(googlePayload.Email);
                 if (user == null)
                 {
@@ -87,12 +88,13 @@ namespace AliHaydarBase.Api.Core.Repositories
                     }
                 }
 
+                // 3️⃣ Generate access token
                 var roles = await _userManager.GetRolesAsync(user);
                 var jwtResponse = _jwtRepository.GenerateAccessToken(new JwtRequestDto
                 {
                     User = user,
                     Roles = roles,
-                    DeviceId = deviceId // 🔐 include device binding if you want
+                    DeviceId = deviceId
                 });
 
                 if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.Token))
@@ -103,30 +105,45 @@ namespace AliHaydarBase.Api.Core.Repositories
                     return response;
                 }
 
-                var refreshToken = _jwtRepository.GenerateRefreshToken();
-                if (!refreshToken.IsSuccessful || string.IsNullOrWhiteSpace(refreshToken.RefreshToken))
+                // 4️⃣ Generate refresh token
+                var refreshTokenResult = _jwtRepository.GenerateRefreshToken();
+                if (!refreshTokenResult.IsSuccessful || string.IsNullOrWhiteSpace(refreshTokenResult.RefreshToken))
                 {
                     response.IsSuccessful = false;
                     response.Errors.Add("Refresh token generation failed");
-                    response.Errors.AddRange(refreshToken.Errors);
+                    response.Errors.AddRange(refreshTokenResult.Errors);
                     return response;
                 }
 
-                user.RefreshToken = refreshToken.RefreshToken;
+                // 5️⃣ Persist refresh token in both User and RefreshTokens table
+                user.RefreshToken = refreshTokenResult.RefreshToken;
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
                 var updateResult = await _userManager.UpdateAsync(user);
                 if (!updateResult.Succeeded)
                 {
                     response.IsSuccessful = false;
-                    response.Errors.Add("Invalid Authentication");
+                    response.Errors.Add("Failed to update user with refresh token");
                     return response;
                 }
 
+                var refreshTokenEntry = new RefreshTokenEntry
+                {
+                    Token = refreshTokenResult.RefreshToken,
+                    DeviceId = deviceId,
+                    UserId = user.Id,
+                    ExpiryTime = DateTime.UtcNow.AddDays(7),
+                    IsRevoked = false
+                };
+
+                await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
+                await _unitOfWork.Complete();
+
+                // 6️⃣ Build response
                 response.Token = jwtResponse.Token;
-                response.RefreshToken = refreshToken.RefreshToken;
+                response.RefreshToken = refreshTokenResult.RefreshToken;
                 response.IsSuccessful = true;
                 response.Errors = new List<string> { "Ok" };
+
                 return response;
             }
             catch (Exception e)

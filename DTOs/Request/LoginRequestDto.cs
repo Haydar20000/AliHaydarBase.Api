@@ -25,5 +25,7 @@ namespace AliHaydarBase.Api.DTOs.Request
 
         [Display(Name = DkString.RememberMe)]
         public bool RememberMe { get; set; }
+
+        public string DeviceId { get; set; } = string.Empty;   // optional, for binding refresh tokens to device
     }
 }

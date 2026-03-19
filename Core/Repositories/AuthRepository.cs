@@ -45,6 +45,7 @@ namespace AliHaydarBase.Api.Core.Repositories
         {
             var response = new AuthResponseDto();
 
+            // 1️⃣ Validate input
             if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
                 response.IsSuccessful = false;
@@ -53,16 +54,17 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 2️⃣ Check if user already exists
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser is not null)
             {
                 if (existingUser.PasswordHash is null)
                 {
-                    response.Errors.Add(DkString.GoogleRegisterError01);
+                    response.Errors.Add(DkString.GoogleRegisterError01); // user exists via Google
                 }
                 else
                 {
-                    response.Errors.Add(DkString.UserExistError);
+                    response.Errors.Add(DkString.UserExistError); // user exists with password
                 }
 
                 response.IsSuccessful = false;
@@ -70,6 +72,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 3️⃣ Create new user
             var user = new User
             {
                 Email = request.Email,
@@ -84,8 +87,10 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 4️⃣ Assign default role
             await _userManager.AddToRoleAsync(user, "Visitor");
 
+            // 5️⃣ Send confirmation email
             var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailRequest = new EmailRequestDto
             {
@@ -103,10 +108,12 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 6️⃣ Build response (no tokens yet, user must confirm email then login)
             response.UserId = user.Id;
             response.Roles = [.. await _userManager.GetRolesAsync(user)];
             response.IsSuccessful = true;
             response.Code = 200;
+
             return response;
         }
 
@@ -283,6 +290,7 @@ namespace AliHaydarBase.Api.Core.Repositories
         {
             var response = new AuthResponseDto();
 
+            // 1️⃣ Validate input
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
                 response.Errors.Add("Email and password are required.");
@@ -290,6 +298,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 2️⃣ Find user and check password
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user is null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
@@ -298,58 +307,72 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 3️⃣ Ensure email confirmed
             if (!await _userManager.IsEmailConfirmedAsync(user))
             {
-                response.Errors.Add("You Need to Confirm Your Email");
+                response.Errors.Add("You need to confirm your email");
                 response.IsSuccessful = false;
                 response.Code = 1;
                 return response;
             }
 
+            // 4️⃣ Generate access token
             var roles = await _userManager.GetRolesAsync(user);
             var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
                 User = user,
-                Roles = roles
+                Roles = roles,
+                DeviceId = request.DeviceId // make sure LoginRequestDto includes DeviceId
             });
 
-            if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.RefreshToken))
+            if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.Token))
             {
                 response.IsSuccessful = false;
+                response.Errors.Add("Access token generation failed");
                 response.Errors.AddRange(jwtResponse.Errors);
                 return response;
             }
 
-            var refreshToken = _jwt.GenerateRefreshToken();
-            if (!refreshToken.IsSuccessful || string.IsNullOrWhiteSpace(refreshToken.RefreshToken))
+            // 5️⃣ Generate refresh token
+            var refreshTokenResult = _jwt.GenerateRefreshToken();
+            if (!refreshTokenResult.IsSuccessful || string.IsNullOrWhiteSpace(refreshTokenResult.RefreshToken))
             {
                 response.IsSuccessful = false;
-                response.Errors.AddRange(refreshToken.Errors);
+                response.Errors.Add("Refresh token generation failed");
+                response.Errors.AddRange(refreshTokenResult.Errors);
                 return response;
             }
 
-            user.RefreshToken = refreshToken.RefreshToken;
+            // 6️⃣ Persist refresh token in both User and RefreshTokens table
+            user.RefreshToken = refreshTokenResult.RefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:ExpirationInDays"));
+            await _userManager.UpdateAsync(user);
 
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
+            var refreshTokenEntry = new RefreshTokenEntry
             {
-                response.IsSuccessful = false;
-                response.Errors.Add("Invalid Authentication");
-                return response;
-            }
+                Token = refreshTokenResult.RefreshToken,
+                DeviceId = request.DeviceId,
+                UserId = user.Id,
+                ExpiryTime = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:ExpirationInDays")),
+                IsRevoked = false
+            };
 
-            response.Token = jwtResponse.RefreshToken;
-            response.RefreshToken = refreshToken.RefreshToken;
+            await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
+            await _unitOfWork.Complete();
+
+            // 7️⃣ Build response
+            response.Token = jwtResponse.Token;
+            response.RefreshToken = refreshTokenResult.RefreshToken;
             response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { request.Email });
+
             return response;
         }
-
         public async Task<AuthResponseDto> LoginWithRefreshToken(RefreshTokenRequestDto request)
         {
             var response = new AuthResponseDto();
+            //Console.WriteLine($"🔄 Refresh attempt: token={request.RefreshToken}, deviceId={request.DeviceId}");
 
+            // 1️⃣ Validate input
             if (string.IsNullOrWhiteSpace(request.RefreshToken) || string.IsNullOrWhiteSpace(request.DeviceId))
             {
                 response.IsSuccessful = false;
@@ -357,6 +380,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 2️⃣ Lookup existing refresh token entry
             var tokenEntry = await _unitOfWork.RefreshTokens.SingleOrDefault(t =>
                 t.Token == request.RefreshToken &&
                 t.DeviceId == request.DeviceId &&
@@ -370,6 +394,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 3️⃣ Find user associated with token
             var user = await _userManager.FindByIdAsync(tokenEntry.UserId);
             if (user is null)
             {
@@ -378,11 +403,13 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 4️⃣ Generate new access token
             var roles = await _userManager.GetRolesAsync(user);
             var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
                 User = user,
-                Roles = roles
+                Roles = roles,
+                DeviceId = request.DeviceId // keep device binding consistent
             });
 
             if (!jwtResponse.IsSuccessful || string.IsNullOrWhiteSpace(jwtResponse.Token))
@@ -393,7 +420,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            // 🔄 Rotate refresh token
+            // 5️⃣ Rotate refresh token (revoke old one)
             tokenEntry.IsRevoked = true;
 
             var refreshTokenResult = _jwt.GenerateRefreshToken();
@@ -404,23 +431,31 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 6️⃣ Persist new refresh token entry
             var newToken = new RefreshTokenEntry
             {
                 Token = refreshTokenResult.RefreshToken,
                 DeviceId = request.DeviceId,
                 UserId = user.Id,
-                ExpiryTime = DateTime.UtcNow.AddDays(7)
+                ExpiryTime = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
             };
 
             await _unitOfWork.RefreshTokens.AddAsync(newToken);
             await _unitOfWork.Complete();
 
+            // 7️⃣ Build response
             response.Token = jwtResponse.Token;
             response.RefreshToken = newToken.Token;
             response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
+            response.Errors = new List<string> { "Ok" };
+
+            // 8️⃣ Audit log
+            await LogActionAsync(user.Id, "RefreshLogin", "User refreshed session", new { user.Email });
+
             return response;
         }
+
         public JwtResponseDto ValidateToken(string token)
         {
             var response = new JwtResponseDto();
