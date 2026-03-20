@@ -15,5 +15,11 @@ namespace AliHaydarBase.Api.Core.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsRevoked { get; set; } = false;
 
+        // 🔎 New fields
+        public DateTime? RevokedAt { get; set; }
+        public string? ReplacedByToken { get; set; }
+        public string? IpAddress { get; set; }
+        public string? UserAgent { get; set; }
+
     }
 }

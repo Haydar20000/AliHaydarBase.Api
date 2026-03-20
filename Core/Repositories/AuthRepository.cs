@@ -117,6 +117,72 @@ namespace AliHaydarBase.Api.Core.Repositories
             return response;
         }
 
+        /// <summary>
+        /// Verifies a user's email by validating the provided email and verification code, confirming the email if valid, and returning a response indicating the success or failure of the operation. Handles error cases for missing input, user not found, and invalid or expired verification codes, while also logging the action for auditing purposes.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <summary>
+        /// ✅ Verifies a user's email using the provided OTP code.
+        /// - Validates input
+        /// - Confirms email with UserManager
+        /// - Returns structured AuthResponseDto
+        /// - Logs audit trail for monitoring
+        /// </summary>
+        public async Task<AuthResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request)
+        {
+            var response = new AuthResponseDto();
+            var error = new List<string>();
+
+            // 🛡️ 1️⃣ Validate input
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+            {
+                error.Add("Email and verification code are required.");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            // 🔎 2️⃣ Find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                error.Add("Invalid Request");
+                response.Errors = error;
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            // 🔑 3️⃣ Confirm email with provided code
+            var result = await _userManager.ConfirmEmailAsync(user, request.Code);
+            if (!result.Succeeded)
+            {
+                response.Errors = result.Errors.Select(e => e.Description).ToList();
+                response.IsSuccessful = false;
+                response.Code = 1001; // 📌 Custom code for OTP mismatch/expired
+                return response;
+            }
+
+            // 🎉 4️⃣ Build success response
+            response.IsSuccessful = true;
+            response.UserId = user.Id;
+            response.Code = 200;
+
+            // 📝 5️⃣ Audit log (structured)
+            await _unitOfWork.AuditLogger.LogAsync(
+                user.Id,
+                "VerifyEmail",
+                "User verified email successfully",
+                request.IpAddress ?? "",
+                request.DeviceId ?? "",
+                new { user.Email }
+            );
+
+            return response;
+        }
+
+
+
         /// <summary> // Finish 
         /// Initiates the forgot password process by generating a reset token and sending it via email to the user.
         /// </summary>
@@ -244,6 +310,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
             return response;
         }
+
         /// <summary> // Finish
         /// Resets the user's password using the provided email, new password, and OTP token. Validates the input, checks the user's existence, and updates the password if the OTP is valid.
         /// </summary>
@@ -251,9 +318,10 @@ namespace AliHaydarBase.Api.Core.Repositories
         /// <returns></returns>
         public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
         {
-            var error = new List<string>();
             var response = new AuthResponseDto();
+            var error = new List<string>();
 
+            // 1️⃣ Validate input
             if (string.IsNullOrWhiteSpace(request.Email) ||
                 string.IsNullOrWhiteSpace(request.Password) ||
                 string.IsNullOrWhiteSpace(request.Otp))
@@ -264,6 +332,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 2️⃣ Find user
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user is null)
             {
@@ -273,6 +342,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 3️⃣ Reset password
             var result = await _userManager.ResetPasswordAsync(user, request.Otp, request.Password);
             if (!result.Succeeded)
             {
@@ -281,13 +351,48 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
+            // 4️⃣ Revoke all refresh tokens (logout everywhere)
+            var tokens = await _unitOfWork.RefreshTokens.FindAsync(t =>
+                t.UserId == user.Id && !t.IsRevoked);
+
+            foreach (var token in tokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTime.UtcNow;
+            }
+
+            await _unitOfWork.Complete();
+
+            // 5️⃣ Build response
             response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
+            response.Errors = new List<string> { "Password reset successful. All sessions revoked." };
+            response.UserId = user.Id;
+            response.Code = 200;
+
+            // 6️⃣ Audit log
+            // await LogActionAsync(user.Id, "ResetPassword", "User reset password and all sessions revoked", new { user.Email });
+
+            // 6️⃣ Audit log
+            await _unitOfWork.AuditLogger.LogAsync(
+                user.Id,
+                "ResetPassword",
+                "User reset password and all sessions revoked",
+                request.IpAddress ?? "",
+                request.DeviceId ?? "",
+                new { user.Email }
+            );
+
             return response;
         }
 
+        /// <summary>
+        /// Authenticates a user by validating their email and password, checking email confirmation, generating JWT access and refresh tokens, and returning them in the response. Also handles error cases for invalid credentials, unconfirmed email, and token generation failures.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
         {
+
             var response = new AuthResponseDto();
 
             // 1️⃣ Validate input
@@ -353,8 +458,11 @@ namespace AliHaydarBase.Api.Core.Repositories
                 Token = refreshTokenResult.RefreshToken,
                 DeviceId = request.DeviceId,
                 UserId = user.Id,
-                ExpiryTime = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:ExpirationInDays")),
-                IsRevoked = false
+                ExpiryTime = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow,
+                IsRevoked = false,
+                IpAddress = request.IpAddress,
+                UserAgent = request.UserAgent
             };
 
             await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
@@ -365,8 +473,23 @@ namespace AliHaydarBase.Api.Core.Repositories
             response.RefreshToken = refreshTokenResult.RefreshToken;
             response.IsSuccessful = true;
 
+            await _unitOfWork.AuditLogger.LogAsync(
+                user.Id,
+                "login",
+                "User logged in",
+                request.IpAddress ?? "",
+                request.DeviceId ?? "",
+                new { user.Email }
+            );
+
             return response;
         }
+
+        /// <summary>
+        /// Refreshes the user's authentication by validating the provided refresh token and device ID, generating a new access token, rotating the refresh token, and returning the new tokens in the response. Handles error cases for invalid or expired refresh tokens, user not found, and token generation failures.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<AuthResponseDto> LoginWithRefreshToken(RefreshTokenRequestDto request)
         {
             var response = new AuthResponseDto();
@@ -438,9 +561,16 @@ namespace AliHaydarBase.Api.Core.Repositories
                 DeviceId = request.DeviceId,
                 UserId = user.Id,
                 ExpiryTime = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
+                IsRevoked = false,
+                CreatedAt = DateTime.UtcNow,
+                IpAddress = request.IpAddress,   // 🔎 audit logging
+                UserAgent = request.UserAgent    // 🔎 audit logging
             };
 
+            // ✅ link old token to new one
+            tokenEntry.ReplacedByToken = newToken.Token;
+
+            await _unitOfWork.RefreshTokens.UpdateAsync(tokenEntry);
             await _unitOfWork.RefreshTokens.AddAsync(newToken);
             await _unitOfWork.Complete();
 
@@ -451,10 +581,120 @@ namespace AliHaydarBase.Api.Core.Repositories
             response.Errors = new List<string> { "Ok" };
 
             // 8️⃣ Audit log
-            await LogActionAsync(user.Id, "RefreshLogin", "User refreshed session", new { user.Email });
+            // await LogActionAsync(user.Id, "RefreshLogin", "User refreshed session", new { user.Email });
+            await _unitOfWork.AuditLogger.LogAsync(
+                            user.Id,
+                            "RefreshLogin",
+                            "User refreshed session",
+                            request.IpAddress ?? "",
+                            request.DeviceId ?? "",
+                            new { user.Email }
+                        );
+            return response;
+        }
+
+        /// <summary>
+        /// Logs out a user from a specific device by revoking the associated refresh token, effectively invalidating the session on that device. Validates the input, checks for an active refresh token matching the provided token and device ID, and updates the token's status to revoked if found. Returns a response indicating the success or failure of the logout operation.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AuthResponseDto> LogoutDeviceAsync(RefreshTokenRequestDto request)
+        {
+            var response = new AuthResponseDto();
+
+            // 1️⃣ Validate input
+            if (string.IsNullOrWhiteSpace(request.RefreshToken) || string.IsNullOrWhiteSpace(request.DeviceId))
+            {
+                response.IsSuccessful = false;
+                response.Errors = new List<string> { "Missing token or device ID" };
+                response.Code = 400;
+                return response;
+            }
+
+            // 2️⃣ Lookup active refresh token for this device
+            var tokenEntry = await _unitOfWork.RefreshTokens.SingleOrDefault(t =>
+                t.Token == request.RefreshToken &&
+                t.DeviceId == request.DeviceId &&
+                !t.IsRevoked);
+
+            if (tokenEntry is null)
+            {
+                response.IsSuccessful = false;
+                response.Errors = new List<string> { "No active session found for this device" };
+                response.Code = 404;
+                return response;
+            }
+
+            // 3️⃣ Revoke token
+            tokenEntry.IsRevoked = true;
+            await _unitOfWork.Complete();
+
+            // 4️⃣ Build response (tokens cleared, no new ones issued)
+            response.IsSuccessful = true;
+            response.Errors = new List<string> { "Device logged out successfully" };
+            response.Token = string.Empty;        // no new access token
+            response.RefreshToken = string.Empty; // no new refresh token
+            response.UserId = tokenEntry.UserId;  // optional: include userId for audit
+            response.Roles = new List<string>();  // roles cleared
+            response.Code = 200;
+
+            // Optional: log audit trail
+            // _logger.LogInformation("User {UserId} logged out from device {DeviceId}", tokenEntry.UserId, request.DeviceId);
 
             return response;
         }
+
+        /// <summary>
+        /// Logs out a user from all devices by revoking all active refresh tokens associated with the user's ID, effectively invalidating all sessions across all devices. Validates the input, checks for active refresh tokens for the user, and updates their status to revoked if found. Returns a response indicating the success or failure of the logout operation, along with appropriate error messages for cases such as missing user ID or no active sessions found.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AuthResponseDto> LogoutAllDevicesAsync(LogoutAllRequestDto request)
+        {
+            var response = new AuthResponseDto();
+
+            if (string.IsNullOrWhiteSpace(request.UserId))
+            {
+                response.IsSuccessful = false;
+                response.Errors = new List<string> { "Missing user ID" };
+                response.Code = 400;
+                return response;
+            }
+
+            // 1️⃣ Lookup all active refresh tokens for this user
+            var tokens = await _unitOfWork.RefreshTokens.FindAsync(t =>
+                t.UserId == request.UserId && !t.IsRevoked);
+
+            if (!tokens.Any())
+            {
+                response.IsSuccessful = false;
+                response.Errors = new List<string> { "No active sessions found" };
+                response.Code = 404;
+                return response;
+            }
+
+            // 2️⃣ Revoke all tokens
+            foreach (var token in tokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTime.UtcNow;
+            }
+
+            await _unitOfWork.Complete();
+
+            // 3️⃣ Build response
+            response.IsSuccessful = true;
+            response.Errors = new List<string> { "All devices logged out successfully" };
+            response.Token = string.Empty;
+            response.RefreshToken = string.Empty;
+            response.UserId = request.UserId;
+            response.Roles = new List<string>();
+            response.Code = 200;
+
+            return response;
+        }
+
+        // Finish
 
         public JwtResponseDto ValidateToken(string token)
         {
@@ -477,117 +717,6 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
         }
 
-        public async Task<AuthResponseDto> VerifyEmailAsync(VerifyEmailRequestDto request)
-        {
-            var error = new List<string>();
-            var response = new AuthResponseDto();
-
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
-            {
-                error.Add("Email and verification code are required.");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is null)
-            {
-                error.Add("Invalid Request");
-                response.Errors = error;
-                response.IsSuccessful = false;
-                return response;
-            }
-
-            var result = await _userManager.ConfirmEmailAsync(user, request.Code);
-            if (!result.Succeeded)
-            {
-                response.Errors = [.. result.Errors.Select(e => e.Description)];
-                response.IsSuccessful = false;
-                response.Code = 1001; // Custom code for email verification OTP not matching or expired
-                return response;
-            }
-
-            response.IsSuccessful = true;
-            await LogActionAsync(user.Id, "Login", "User logged in", new { user.Email });
-            return response;
-        }
-
-        public async Task<SystemResponseDto> LogoutDeviceAsync(RefreshTokenRequestDto request)
-        {
-            var response = new SystemResponseDto();
-
-            if (string.IsNullOrWhiteSpace(request.RefreshToken) || string.IsNullOrWhiteSpace(request.DeviceId))
-            {
-                response.IsSuccessful = false;
-                response.Errors = ["Missing token or device ID"];
-                return response;
-            }
-
-            var tokenEntry = await _unitOfWork.RefreshTokens.SingleOrDefault(t =>
-                t.Token == request.RefreshToken &&
-                t.DeviceId == request.DeviceId &&
-                !t.IsRevoked);
-
-            if (tokenEntry is null)
-            {
-                response.IsSuccessful = false;
-                response.Errors = ["No active session found for this device"];
-                return response;
-            }
-
-            tokenEntry.IsRevoked = true;
-            await _unitOfWork.Complete();
-
-            response.IsSuccessful = true;
-            response.Errors = ["Device logged out successfully"];
-
-            return response;
-        }
-
-        public async Task<SystemResponseDto> LogoutAllDevicesAsync(RefreshTokenRequestDto request)
-        {
-            var response = new SystemResponseDto();
-
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
-            {
-                response.IsSuccessful = false;
-                response.Errors = ["Missing refresh token"];
-                return response;
-            }
-
-            var tokenEntry = await _unitOfWork.RefreshTokens.SingleOrDefault(t =>
-                t.Token == request.RefreshToken &&
-                !t.IsRevoked);
-
-            if (tokenEntry is null)
-            {
-                response.IsSuccessful = false;
-                response.Errors = ["Invalid or expired refresh token"];
-                return response;
-            }
-
-            var allTokens = await _unitOfWork.RefreshTokens.FindAsync(t =>
-                t.UserId == tokenEntry.UserId &&
-                !t.IsRevoked);
-
-            if (!allTokens.Any())
-            {
-                response.IsSuccessful = false;
-                response.Errors = ["No active sessions found"];
-                return response;
-            }
-
-            foreach (var token in allTokens)
-                token.IsRevoked = true;
-
-            await _unitOfWork.Complete();
-
-            response.IsSuccessful = true;
-
-            response.Errors = ["All sessions revoked"];
-            return response;
-        }
 
         public SystemResponseDto ValidateToken(TokenValidationRequestDto request)
         {

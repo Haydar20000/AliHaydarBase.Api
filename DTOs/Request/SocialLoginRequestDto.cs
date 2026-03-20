@@ -7,10 +7,11 @@ namespace AliHaydarBase.Api.DTOs.Request
 {
     public class SocialLoginRequestDto
     {
-        public string Provider { get; set; } = string.Empty; // "Google", "Facebook"
-        public string ProviderId { get; set; } = string.Empty; // e.g., Google UID
-        public string AccessToken { get; set; } = string.Empty; // optional
-        public string Email { get; set; } = string.Empty; // optional fallback
+        public string Provider { get; set; }
+        public string IdToken { get; set; }
+        public string DeviceId { get; set; }
+        public string? UserAgent { get; set; }
+        public string? IpAddress { get; set; }
 
     }
 }

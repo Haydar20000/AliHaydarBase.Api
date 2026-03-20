@@ -8,6 +8,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IRefreshTokenEntryRepository : IRepository<RefreshTokenEntry>
     {
-
+        Task<IEnumerable<RefreshTokenEntry>> GetRevokedTokensOlderThanAsync(DateTime cutoff);
+        Task DeleteRangeAsync(IEnumerable<RefreshTokenEntry> tokens);
     }
 }

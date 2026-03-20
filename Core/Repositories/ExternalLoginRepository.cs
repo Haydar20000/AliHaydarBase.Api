@@ -23,13 +23,13 @@ namespace AliHaydarBase.Api.Core.Repositories
             _jwtRepository = jwtRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task<AuthResponseDto> Login(ExternalLoginRequestDto request)
+        public async Task<AuthResponseDto> Login(SocialLoginRequestDto request)
         {
             return request.Provider switch
             {
-                "Google" => await GoogleLogin(request.IdToken, request.DeviceId),
-                // "Facebook" => await FacebookLogin(request.IdToken, request.DeviceId),
-                //"Apple" => await AppleLogin(request.IdToken, request.DeviceId),
+                "Google" => await GoogleLogin(request.IdToken, request.DeviceId, request.IpAddress, request.UserAgent),
+                // "Facebook" => await FacebookLogin(request.IdToken, request.DeviceId, request.IpAddress, request.UserAgent),
+                // "Apple" => await AppleLogin(request.IdToken, request.DeviceId, request.IpAddress, request.UserAgent),
                 _ => new AuthResponseDto
                 {
                     IsSuccessful = false,
@@ -38,7 +38,36 @@ namespace AliHaydarBase.Api.Core.Repositories
             };
         }
 
-        public async Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId)
+        private async Task<RefreshTokenEntry> PersistRefreshTokenAsync(User user, string deviceId, string? ipAddress, string? userAgent)
+        {
+            var refreshTokenResult = _jwtRepository.GenerateRefreshToken();
+            if (!refreshTokenResult.IsSuccessful || string.IsNullOrWhiteSpace(refreshTokenResult.RefreshToken))
+                throw new Exception("Failed to generate refresh token");
+
+            var refreshTokenEntry = new RefreshTokenEntry
+            {
+                Token = refreshTokenResult.RefreshToken,
+                DeviceId = deviceId,
+                UserId = user.Id,
+                ExpiryTime = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow,
+                IsRevoked = false,
+                IpAddress = ipAddress,
+                UserAgent = userAgent
+            };
+
+            await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
+            await _unitOfWork.Complete();
+
+            // also update user record if needed
+            user.RefreshToken = refreshTokenResult.RefreshToken;
+            user.RefreshTokenExpiryTime = refreshTokenEntry.ExpiryTime;
+            await _userManager.UpdateAsync(user);
+
+            return refreshTokenEntry;
+        }
+
+        public async Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId, string ipAddress, string userAgent)
         {
             var response = new AuthResponseDto();
 
@@ -126,14 +155,8 @@ namespace AliHaydarBase.Api.Core.Repositories
                     return response;
                 }
 
-                var refreshTokenEntry = new RefreshTokenEntry
-                {
-                    Token = refreshTokenResult.RefreshToken,
-                    DeviceId = deviceId,
-                    UserId = user.Id,
-                    ExpiryTime = DateTime.UtcNow.AddDays(7),
-                    IsRevoked = false
-                };
+                var refreshTokenEntry = await PersistRefreshTokenAsync(user, deviceId, ipAddress, userAgent);
+
 
                 await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
                 await _unitOfWork.Complete();

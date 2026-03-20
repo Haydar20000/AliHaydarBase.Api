@@ -2,6 +2,7 @@ using System.Text;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.Core.Repositories;
+using AliHaydarBase.Api.Core.Services;
 using AliHaydarBase.Api.Dependencies;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -77,40 +78,40 @@ public static class ServiceCollectionExtensions
             .AddScoped<IAuditLoggerRepository, AuditLoggerRepository>();
         services.AddHttpClient();           // 📡 HTTP Client
         services.AddHttpContextAccessor();  // 📡 HTTP Context
-
+        services.AddHostedService<TokenCleanupService>(); // 🧹 Background service for cleaning up old tokens
         // 🌐 CORS Configuration
-//         services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowDevClient", policy =>
-//     {
-//         policy
-//             .SetIsOriginAllowed(origin =>
-//                 origin.StartsWith("http://localhost") ||
-//                 origin.StartsWith("http://127.0.0.1"))
-//             .AllowAnyHeader()
-//             .AllowAnyMethod();
-//     });
-// });
-services.AddCors(options =>
-{
-    options.AddPolicy("AllowFlutter",
-        policy => policy.WithOrigins("http://localhost:5000", "http://192.168.0.101:5164") // Your flutter port
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
+        //         services.AddCors(options =>
+        // {
+        //     options.AddPolicy("AllowDevClient", policy =>
+        //     {
+        //         policy
+        //             .SetIsOriginAllowed(origin =>
+        //                 origin.StartsWith("http://localhost") ||
+        //                 origin.StartsWith("http://127.0.0.1"))
+        //             .AllowAnyHeader()
+        //             .AllowAnyMethod();
+        //     });
+        // });
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFlutter",
+                policy => policy.WithOrigins("http://localhost:5000", "http://192.168.0.101:5164") // Your flutter port
+                                .AllowAnyMethod()
+                                .AllowAnyHeader());
+        });
         var allowedOrigins = env.IsDevelopment()
     ? new[] { "http://localhost:57636", "http://192.168.0.101:5164" }
     : new[] { "https://your-production-client.com" };
 
-// services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowWebClient", policy =>
-//     {
-//         policy.WithOrigins(allowedOrigins)
-//               .AllowAnyHeader()
-//               .AllowAnyMethod();
-//     });
-// });
+        // services.AddCors(options =>
+        // {
+        //     options.AddPolicy("AllowWebClient", policy =>
+        //     {
+        //         policy.WithOrigins(allowedOrigins)
+        //               .AllowAnyHeader()
+        //               .AllowAnyMethod();
+        //     });
+        // });
 
         services.Configure<IdentityOptions>(options =>
         {

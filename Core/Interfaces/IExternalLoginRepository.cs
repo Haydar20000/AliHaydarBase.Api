@@ -9,7 +9,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IExternalLoginRepository
     {
-        Task<AuthResponseDto> Login(ExternalLoginRequestDto request);
-        Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId);
+        Task<AuthResponseDto> Login(SocialLoginRequestDto request);
+        Task<AuthResponseDto> GoogleLogin(string idToken, string deviceId, string ipAddress, string userAgent);
     }
 }

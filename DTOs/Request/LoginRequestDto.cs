@@ -9,23 +9,10 @@ namespace AliHaydarBase.Api.DTOs.Request
 {
     public class LoginRequestDto
     {
-        [Required(ErrorMessage = DkString.EmailError01)]
-        [EmailAddress(ErrorMessage = DkString.EmailError02)]
-        [DataType(DataType.EmailAddress)]
-        [Display(Name = DkString.Email)]
-        public string Email { get; set; } = string.Empty;
-
-
-        [Required(ErrorMessage = DkString.PasswordError01)]
-        [StringLength(256, ErrorMessage = DkString.PasswordError02, MinimumLength = 8)]
-        [DataType(DataType.Password)]
-        [Display(Name = DkString.Password)]
-        //[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-        public string Password { get; set; } = string.Empty;
-
-        [Display(Name = DkString.RememberMe)]
-        public bool RememberMe { get; set; }
-
-        public string DeviceId { get; set; } = string.Empty;   // optional, for binding refresh tokens to device
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string DeviceId { get; set; }
+        public string? UserAgent { get; set; }
+        public string? IpAddress { get; set; }
     }
 }

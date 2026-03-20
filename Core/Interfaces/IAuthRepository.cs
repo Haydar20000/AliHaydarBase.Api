@@ -12,8 +12,10 @@ namespace AliHaydarBase.Api.Core.Interfaces
         Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
         Task<SystemResponseDto> ResendEmailConfirmation(ResendEmailConfirmationRequestDto request);
         Task<AuthResponseDto> LoginWithRefreshToken(RefreshTokenRequestDto request);
-        Task<SystemResponseDto> LogoutDeviceAsync(RefreshTokenRequestDto request);
-        Task<SystemResponseDto> LogoutAllDevicesAsync(RefreshTokenRequestDto request);
+        Task<AuthResponseDto> LogoutDeviceAsync(RefreshTokenRequestDto request);
+        Task<AuthResponseDto> LogoutAllDevicesAsync(LogoutAllRequestDto request);
+        // till here all is well
+
         JwtResponseDto ValidateToken(string Token);
         Task<RefreshTokenIntrospectionResponseDto> IntrospectRefreshTokenAsync(string token);
         Task<IEnumerable<ClaimDefinitionResponseDto>> GetAllClaimDefinitionsAsync();

@@ -7,8 +7,10 @@ namespace AliHaydarBase.Api.DTOs.Request
 {
     public class RefreshTokenRequestDto
     {
-        public string RefreshToken { get; set; } = string.Empty;
-        public string DeviceId { get; set; } = string.Empty;
+        public string RefreshToken { get; set; }
+        public string DeviceId { get; set; }
+        public string? IpAddress { get; set; }
+        public string? UserAgent { get; set; }
 
     }
 }

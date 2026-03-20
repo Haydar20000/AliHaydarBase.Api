@@ -23,7 +23,7 @@ namespace AliHaydarBase.Api.Core.Repositories
         {
             _context = context;
             User = new UsersRepository(_context);
-            RefreshTokens = new RefreshTokenEntryRepositories(_context);
+            RefreshTokens = new RefreshTokenEntryRepositories(_context, this);
             ClaimDefinitions = new ClaimDefinitionsRepository(_context);
             AuditLogger = new AuditLoggerRepository(_context, this);
         }

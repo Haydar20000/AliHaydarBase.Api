@@ -43,6 +43,7 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.BadRequest(response);
             });
             /// Verify Email Endpoint
+
             group.MapPost("/verifyEmail", async (VerifyEmailRequestDto dto, IAuthRepository repo) =>
                         {
                             var response = await repo.VerifyEmailAsync(dto);
@@ -61,45 +62,75 @@ namespace AliHaydarBase.Api.Endpoints
             });
 
             /// Reset Password Endpoint
-            group.MapPost("/resetPassword", async (ResetPasswordRequestDto dto, IAuthRepository repo) =>
+            group.MapPost("/resetPassword", async (HttpContext http, ResetPasswordRequestDto dto, IAuthRepository repo) =>
             {
+                dto.IpAddress = http.Connection.RemoteIpAddress?.ToString();
+                dto.DeviceId ??= http.Request.Headers["Device-Id"].ToString(); // if you want client to send DeviceId in header
+
                 var response = await repo.ResetPasswordAsync(dto);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.BadRequest(response);
             });
 
-            /// External Login Endpoint Finish Google 
-            group.MapPost("/external-login", async (ExternalLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
-                       {
-                           var response = await externalLogin.Login(dto);
-                           return response.IsSuccessful
-                               ? Results.Ok(response)
-                               : Results.BadRequest(response);
-                       });
 
-            // Login Endpoint Email and Password
-            group.MapPost("/login", async (LoginRequestDto request, IAuthRepository repo) =>
+            /// External Login Endpoint Finish Google /external-login
+            group.MapPost("/external-login", async (HttpContext http, SocialLoginRequestDto dto, IExternalLoginRepository externalLogin) =>
             {
-                var response = await repo.LoginAsync(request);
+                dto.IpAddress = http.Connection.RemoteIpAddress?.ToString();
+                dto.UserAgent = http.Request.Headers["User-Agent"].ToString();
+
+                var response = await externalLogin.Login(dto);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.BadRequest(response);
             });
 
-
-
-            group.MapPost("/validate", (string token, IAuthRepository repo) =>
+            // Login Endpoint Email and Password
+            group.MapPost("/login", async (HttpContext http, LoginRequestDto request, IAuthRepository repo) =>
             {
-                var response = repo.ValidateToken(token);
+                request.IpAddress = http.Connection.RemoteIpAddress?.ToString();
+                request.UserAgent = http.Request.Headers["User-Agent"].ToString();
+
+                var response = await repo.LoginAsync(request);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
             });
 
-            group.MapPost("/refresh", async (RefreshTokenRequestDto request, IAuthRepository repo) =>
+            // Refresh Token Endpoint
+            group.MapPost("/refresh", async (HttpContext http, RefreshTokenRequestDto request, IAuthRepository repo) =>
             {
+                // Capture audit info
+                request.IpAddress = http.Connection.RemoteIpAddress?.ToString();
+                request.UserAgent = http.Request.Headers["User-Agent"].ToString();
+
                 var response = await repo.LoginWithRefreshToken(request);
+                return response.IsSuccessful
+                    ? Results.Ok(response)
+                    : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
+            });
+
+            // Logout Device Endpoint
+            group.MapPost("/logout", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>
+            {
+                var result = await authRepo.LogoutDeviceAsync(request);
+                return Results.Ok(result);
+            });
+
+            // Logout All Devices Endpoint
+            group.MapPost("/logout-all", async (LogoutAllRequestDto request, IAuthRepository authRepo) =>
+            {
+                var result = await authRepo.LogoutAllDevicesAsync(request);
+                return Results.Ok(result);
+            });
+
+            // all is well until here
+
+
+            group.MapPost("/validate", (string token, IAuthRepository repo) =>
+            {
+                var response = repo.ValidateToken(token);
                 return response.IsSuccessful
                     ? Results.Ok(response)
                     : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
@@ -116,17 +147,7 @@ namespace AliHaydarBase.Api.Endpoints
 
 
 
-            group.MapPost("/logout-device", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>
-            {
-                var result = await authRepo.LogoutDeviceAsync(request);
-                return Results.Ok(result);
-            });
 
-            group.MapPost("/logout-all", async (RefreshTokenRequestDto request, IAuthRepository authRepo) =>
-            {
-                var result = await authRepo.LogoutAllDevicesAsync(request);
-                return Results.Ok(result);
-            });
 
             group.MapPost("/validate-token", (TokenValidationRequestDto request, IAuthRepository authRepo) =>
             {
