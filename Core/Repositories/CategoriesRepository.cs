@@ -1,0 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AliHaydarBase.Api.Core.Interfaces;
+using AliHaydarBase.Api.Core.Models.Blogs;
+using AliHaydarBase.Api.Dependencies;
+
+namespace AliHaydarBase.Api.Core.Repositories
+{
+    public class CategoriesRepository : Repository<Categories>, ICategoriesRepository
+    {
+        public CategoriesRepository(AliHaydarDbContext context) : base(context)
+        {
+
+        }
+    }
+}

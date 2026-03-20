@@ -1,4 +1,5 @@
 using AliHaydarBase.Api.Core.Models;
+using AliHaydarBase.Api.Core.Models.Blogs;
 using AliHaydarBase.Api.HelperFunctions.SeedConfiguration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +8,16 @@ namespace AliHaydarBase.Api.Dependencies
 {
     public class AliHaydarDbContext(DbContextOptions<AliHaydarDbContext> options) : IdentityDbContext<User, Role, string>(options)
     {
+        // Identity-related DbSets
         public DbSet<RefreshTokenEntry> RefreshTokens { get; set; }
         public DbSet<ClaimDefinition> ClaimDefinitions { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+
+        // Blog-related DbSets
+        public DbSet<Blogs> Blogs { get; set; }
+        public DbSet<Categories> Categories { get; set; }
+        public DbSet<BlogImages> BlogImages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

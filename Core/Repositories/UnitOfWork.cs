@@ -19,6 +19,12 @@ namespace AliHaydarBase.Api.Core.Repositories
 
         public IAuditLoggerRepository AuditLogger { get; private set; }
 
+        public IBlogsRepository Blogs { get; private set; }
+
+        public ICategoriesRepository Categories { get; private set; }
+
+        public IBlogImagesRepository BlogImages { get; private set; }
+
         public UnitOfWork(AliHaydarDbContext context)
         {
             _context = context;
@@ -26,6 +32,9 @@ namespace AliHaydarBase.Api.Core.Repositories
             RefreshTokens = new RefreshTokenEntryRepositories(_context, this);
             ClaimDefinitions = new ClaimDefinitionsRepository(_context);
             AuditLogger = new AuditLoggerRepository(_context, this);
+            Blogs = new BlogsRepository(_context);
+            Categories = new CategoriesRepository(_context);
+            BlogImages = new BlogImagesRepository(_context);
         }
 
         public async Task<int> Complete()

@@ -12,6 +12,11 @@ namespace AliHaydarBase.Api.Core.Interfaces
         IRefreshTokenEntryRepository RefreshTokens { get; }
         IClaimDefinitionsRepository ClaimDefinitions { get; }
         IAuditLoggerRepository AuditLogger { get; } // IAuditLogger
+
+        // Blog-related repositories
+        IBlogsRepository Blogs { get; }
+        ICategoriesRepository Categories { get; }
+        IBlogImagesRepository BlogImages { get; }
         Task<int> Complete();
 
     }
