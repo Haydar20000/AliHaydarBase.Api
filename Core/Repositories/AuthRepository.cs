@@ -215,7 +215,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             var emails = new List<MailAddress> { new MailAddress(user.Email) };
             var variables = new List<string>
             {
-                user.FullName,
+                user.FullName??user.Email,
                 token,
                 "لاسترجاع كلمة السر"
             };
