@@ -8,6 +8,6 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IBlogImagesRepository : IRepository<BlogImages>
     {
-
+        Task<List<BlogImages>> GetImagesByBlogIdAsync(Guid blogId);
     }
 }

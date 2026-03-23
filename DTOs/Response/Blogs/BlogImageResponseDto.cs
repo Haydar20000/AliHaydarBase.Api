@@ -7,9 +7,11 @@ namespace AliHaydarBase.Api.DTOs.Response.Blogs
 {
     public class BlogImageResponseDto
     {
-        public int Id { get; set; }
-        public string Url { get; set; }
+        public Guid Id { get; set; }
+        public required string ImageUrl { get; set; }
         public string? Caption { get; set; }
+        public bool IsGallery { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace AliHaydarBase.Api.Core.Models.Blogs
 {
     public class Categories
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         // 🏷️ Category name
         public required string Name { get; set; }
@@ -25,10 +25,13 @@ namespace AliHaydarBase.Api.Core.Models.Blogs
         public bool IsDisabled { get; set; } = false;
 
         // 👤 User who created/modified this category
-        public required string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         // ⏰ When the category was created
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // ⏰ When the category was last updated
+        public DateTime? UpdatedAt { get; set; }
 
         // 🔗 Relationship: blogs under this category
         public ICollection<Blogs> Blogs { get; set; } = new List<Blogs>();

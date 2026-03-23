@@ -108,5 +108,16 @@ namespace AliHaydarBase.Api.Core.Repositories
             _context.Set<TEntity>().Update(entity);
             await _context.SaveChangesAsync();
         }
+
+        public IQueryable<TEntity> Query()
+        {
+            return _context.Set<TEntity>().AsQueryable();
+        }
+
+        public IQueryable<TEntity> Query(Expression<Func<TEntity, bool>> predicate)
+        {
+            return _context.Set<TEntity>().Where(predicate).AsQueryable();
+        }
+
     }
 }

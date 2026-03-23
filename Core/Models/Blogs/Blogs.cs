@@ -8,16 +8,19 @@ namespace AliHaydarBase.Api.Core.Models.Blogs
 {
     public class Blogs
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public required string Title { get; set; }
         public required string Content { get; set; }
-        public required string UserId { get; set; }
+        public required Guid UserId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public int CategoryId { get; set; }
-        public required Categories Category { get; set; }
+        // ⏰ When the category was last updated
+        public DateTime? UpdatedAt { get; set; }
+
+        public Guid CategoryId { get; set; }
+        public Categories? Category { get; set; }
 
         public ICollection<BlogImages> Images { get; set; } = new List<BlogImages>();
 

@@ -7,9 +7,9 @@ namespace AliHaydarBase.Api.DTOs.Response.Blogs
 {
     public class CategoryResponseDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string IconName { get; set; }
+        public Guid Id { get; set; }
+        public string? Name { get; set; }
+        public string? IconName { get; set; }
         public string? Description { get; set; }
         public bool IsVisible { get; set; }
         public bool IsDisabled { get; set; }

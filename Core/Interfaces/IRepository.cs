@@ -25,5 +25,9 @@ namespace AliHaydarBase.Api.Core.Interfaces
         // To Delete Object
         Task DeleteAsync(Guid id);
         Task DeleteRangeAsync(IEnumerable<Guid> ids);
+
+        // To Query Object
+        IQueryable<TEntity> Query();
+        IQueryable<TEntity> Query(Expression<Func<TEntity, bool>> predicate);
     }
 }

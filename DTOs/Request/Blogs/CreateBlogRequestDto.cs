@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace AliHaydarBase.Api.DTOs.Request.Blogs
 {
-    public class CreateBlogDto
+    public class CreateBlogRequestDto
     {
         public required string Title { get; set; }
         public required string Content { get; set; }
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
 
         public string? TargetRole { get; set; }
         public DateTime? ExpireAt { get; set; }

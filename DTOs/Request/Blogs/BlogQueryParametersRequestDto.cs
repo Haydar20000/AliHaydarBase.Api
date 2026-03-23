@@ -10,7 +10,7 @@ namespace AliHaydarBase.Api.DTOs.Request.Blogs
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
 
-        public int? CategoryId { get; set; }
+        public Guid? CategoryId { get; set; }
         public string? Role { get; set; }
     }
 }

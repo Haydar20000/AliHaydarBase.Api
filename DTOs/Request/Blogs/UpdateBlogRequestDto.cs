@@ -9,7 +9,7 @@ namespace AliHaydarBase.Api.DTOs.Request.Blogs
     {
         public required string Title { get; set; }
         public required string Content { get; set; }
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
 
         public bool IsVisible { get; set; }
         public string? TargetRole { get; set; }

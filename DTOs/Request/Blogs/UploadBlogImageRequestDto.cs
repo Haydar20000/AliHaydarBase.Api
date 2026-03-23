@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace AliHaydarBase.Api.DTOs.Request.Blogs
 {
-    public class CreateBlogImageRequestDto
+    public class UploadBlogImageRequestDto
     {
-        public string Url { get; set; }
-        public string? Caption { get; set; }
+        public required IFormFile File { get; set; }
+        public bool IsGallery { get; set; } = false;
     }
 }
