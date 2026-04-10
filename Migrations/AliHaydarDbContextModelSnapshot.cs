@@ -29,11 +29,9 @@ namespace AliHaydarBase.Api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceId")
@@ -52,7 +50,6 @@ namespace AliHaydarBase.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -62,14 +59,12 @@ namespace AliHaydarBase.Api.Migrations
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.BlogImages", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BlogId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BlogId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Caption")
                         .HasColumnType("nvarchar(max)");
@@ -77,13 +72,18 @@ namespace AliHaydarBase.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Url")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsGallery")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -94,11 +94,9 @@ namespace AliHaydarBase.Api.Migrations
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Blogs", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("AuditLevel1Approved")
                         .HasColumnType("bit");
@@ -109,8 +107,8 @@ namespace AliHaydarBase.Api.Migrations
                     b.Property<bool>("AuditLevel3Approved")
                         .HasColumnType("bit");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -135,9 +133,11 @@ namespace AliHaydarBase.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -148,11 +148,9 @@ namespace AliHaydarBase.Api.Migrations
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Categories", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -174,9 +172,11 @@ namespace AliHaydarBase.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -266,6 +266,311 @@ namespace AliHaydarBase.Api.Migrations
                             Type = "CanEditGrades",
                             UiHint = "EnableGradeEditor"
                         });
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("BackImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("BackLayoutJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CardHeightMm")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CardWidthMm")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Dpi")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("FrontImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("FrontLayoutJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IdCardTemplates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                            BackLayoutJson = "{}",
+                            CardHeightMm = 54,
+                            CardWidthMm = 86,
+                            CompanyName = "Ali Haydar Co.",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Dpi = 300,
+                            FrontLayoutJson = "{}",
+                            IsActive = true,
+                            TemplateName = "Default Template",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Year = 2024
+                        });
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.Member", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DateOfBirth")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastYearIdentityRenewal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegisterNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Members");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            City = "Baghdad",
+                            DateOfBirth = "1990-01-01",
+                            Email = "ali.haydar@example.com",
+                            FullName = "Ali Haydar",
+                            Gender = "Male",
+                            ImageUrl = "https://randomuser.me/api/portraits/men/1.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000001",
+                            RegisterNumber = "REG-001",
+                            Stage = "Stage 1",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            City = "Basra",
+                            DateOfBirth = "1992-03-12",
+                            Email = "sara.mahmood@example.com",
+                            FullName = "Sara Mahmood",
+                            Gender = "Female",
+                            ImageUrl = "https://randomuser.me/api/portraits/women/2.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000002",
+                            RegisterNumber = "REG-002",
+                            Stage = "Stage 2",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            City = "Mosul",
+                            DateOfBirth = "1988-07-21",
+                            Email = "omar.khalid@example.com",
+                            FullName = "Omar Khalid",
+                            Gender = "Male",
+                            ImageUrl = "https://randomuser.me/api/portraits/men/3.jpg",
+                            LastYearIdentityRenewal = "2023",
+                            Phone = "07700000003",
+                            RegisterNumber = "REG-003",
+                            Stage = "Stage 3",
+                            Status = "Inactive"
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            City = "Baghdad",
+                            DateOfBirth = "1995-11-05",
+                            Email = "lina.ahmed@example.com",
+                            FullName = "Lina Ahmed",
+                            Gender = "Female",
+                            ImageUrl = "https://randomuser.me/api/portraits/women/4.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000004",
+                            RegisterNumber = "REG-004",
+                            Stage = "Stage 1",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            City = "Najaf",
+                            DateOfBirth = "1991-09-14",
+                            Email = "hassan.jabar@example.com",
+                            FullName = "Hassan Jabar",
+                            Gender = "Male",
+                            ImageUrl = "https://randomuser.me/api/portraits/men/5.jpg",
+                            LastYearIdentityRenewal = "2022",
+                            Phone = "07700000005",
+                            RegisterNumber = "REG-005",
+                            Stage = "Stage 2",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            City = "Karbala",
+                            DateOfBirth = "1993-02-18",
+                            Email = "noor.zahra@example.com",
+                            FullName = "Noor Al‑Zahra",
+                            Gender = "Female",
+                            ImageUrl = "https://randomuser.me/api/portraits/women/6.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000006",
+                            RegisterNumber = "REG-006",
+                            Stage = "Stage 3",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            City = "Baghdad",
+                            DateOfBirth = "1989-06-30",
+                            Email = "mustafa.ali@example.com",
+                            FullName = "Mustafa Ali",
+                            Gender = "Male",
+                            ImageUrl = "https://randomuser.me/api/portraits/men/7.jpg",
+                            LastYearIdentityRenewal = "2023",
+                            Phone = "07700000007",
+                            RegisterNumber = "REG-007",
+                            Stage = "Stage 1",
+                            Status = "Inactive"
+                        },
+                        new
+                        {
+                            Id = new Guid("88888888-8888-8888-8888-888888888888"),
+                            City = "Basra",
+                            DateOfBirth = "1994-04-22",
+                            Email = "fatima.kareem@example.com",
+                            FullName = "Fatima Kareem",
+                            Gender = "Female",
+                            ImageUrl = "https://randomuser.me/api/portraits/women/8.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000008",
+                            RegisterNumber = "REG-008",
+                            Stage = "Stage 2",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("99999999-9999-9999-9999-999999999999"),
+                            City = "Erbil",
+                            DateOfBirth = "1990-12-10",
+                            Email = "yasir.salman@example.com",
+                            FullName = "Yasir Salman",
+                            Gender = "Male",
+                            ImageUrl = "https://randomuser.me/api/portraits/men/9.jpg",
+                            LastYearIdentityRenewal = "2024",
+                            Phone = "07700000009",
+                            RegisterNumber = "REG-009",
+                            Stage = "Stage 3",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            City = "Sulaymaniyah",
+                            DateOfBirth = "1996-08-17",
+                            Email = "rana.saeed@example.com",
+                            FullName = "Rana Saeed",
+                            Gender = "Female",
+                            ImageUrl = "https://randomuser.me/api/portraits/women/10.jpg",
+                            LastYearIdentityRenewal = "2023",
+                            Phone = "07700000010",
+                            RegisterNumber = "REG-010",
+                            Stage = "Stage 1",
+                            Status = "Active"
+                        });
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.PrintHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("PrintedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PrintedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("PrintHistories");
                 });
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.RefreshTokenEntry", b =>
@@ -604,6 +909,25 @@ namespace AliHaydarBase.Api.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.PrintHistory", b =>
+                {
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Members.Member", "Member")
+                        .WithMany("PrintHistories")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", "Template")
+                        .WithMany("PrintHistories")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Template");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("AliHaydarBase.Api.Core.Models.Role", null)
@@ -663,6 +987,16 @@ namespace AliHaydarBase.Api.Migrations
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Categories", b =>
                 {
                     b.Navigation("Blogs");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", b =>
+                {
+                    b.Navigation("PrintHistories");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.Member", b =>
+                {
+                    b.Navigation("PrintHistories");
                 });
 #pragma warning restore 612, 618
         }

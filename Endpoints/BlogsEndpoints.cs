@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models.Blogs;
 using AliHaydarBase.Api.DTOs.Request.Blogs;
+using AliHaydarBase.Api.DTOs.Response;
 using AliHaydarBase.Api.DTOs.Response.Blogs;
 
 namespace AliHaydarBase.Api.Endpoints

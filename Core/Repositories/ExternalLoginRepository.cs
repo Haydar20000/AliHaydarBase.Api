@@ -3,6 +3,7 @@ using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
+using AliHaydarBase.Api.DTOs.Response.Authentication;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 

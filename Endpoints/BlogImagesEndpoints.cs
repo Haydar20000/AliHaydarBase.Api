@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models.Blogs;
 using AliHaydarBase.Api.DTOs.Request.Blogs;
+using AliHaydarBase.Api.DTOs.Response;
 using AliHaydarBase.Api.DTOs.Response.Blogs;
 
 namespace AliHaydarBase.Api.Endpoints
 {
     public static class BlogImagesEndpoints
     {
-        public static void MapBlogsEndpoints(this WebApplication app)
+        public static void MapBlogImagesEndpoints(this WebApplication app)
         {
             var group = app.MapGroup("api/blogs");
             group.MapPost("/{blogId}/upload", UploadBlogImage).RequireAuthorization(); // 🔥 Require auth for uploading images

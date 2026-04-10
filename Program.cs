@@ -43,5 +43,10 @@ app.UseAuthorization();          // ✅ Enforce access policies
 
 // 🚀 Minimal API endpoints
 app.MapAuthEndpoints();          // 🔐 Auth routes (login, register, etc.)
+app.MapPrintHistoryEndpoints(); // 🖨️ Print history routes
+app.MapMembersEndpoints();       // 👤 Member management routes
+app.MapBlogsEndpoints();         // 📝 Blog management routes
+app.MapBlogImagesEndpoints();    // 🖼️ Blog image management routes
+
 
 app.Run(); // 🏁 Start the application

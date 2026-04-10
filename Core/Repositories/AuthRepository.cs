@@ -8,6 +8,7 @@ using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
 using Microsoft.AspNetCore.Identity;
 using AliHaydarBase.Api.Constants.Text;
+using AliHaydarBase.Api.DTOs.Response.Authentication;
 
 namespace AliHaydarBase.Api.Core.Repositories
 {

@@ -1,5 +1,6 @@
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.Core.Models.Blogs;
+using AliHaydarBase.Api.Core.Models.Members;
 using AliHaydarBase.Api.HelperFunctions.SeedConfiguration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,11 @@ namespace AliHaydarBase.Api.Dependencies
         public DbSet<Categories> Categories { get; set; }
         public DbSet<BlogImages> BlogImages { get; set; }
 
+        public DbSet<Member> Members { get; set; }
+        public DbSet<IdCardTemplate> IdCardTemplates { get; set; }
+        public DbSet<PrintHistory> PrintHistories { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +32,11 @@ namespace AliHaydarBase.Api.Dependencies
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
             modelBuilder.ApplyConfiguration(new ClaimConfiguration());
+
+            // // this is for test we dont need all 
+            modelBuilder.ApplyConfiguration(new MemberConfiguration());
+            modelBuilder.ApplyConfiguration(new IdCardTemplateConfiguration());
+            modelBuilder.ApplyConfiguration(new PrintHistoryConfiguration());
         }
     }
 }

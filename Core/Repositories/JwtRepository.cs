@@ -9,6 +9,7 @@ using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
+using AliHaydarBase.Api.DTOs.Response.Authentication;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AliHaydarBase.Api.Core.Repositories

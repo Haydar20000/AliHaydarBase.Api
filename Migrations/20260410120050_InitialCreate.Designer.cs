@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliHaydarBase.Api.Migrations
 {
     [DbContext(typeof(AliHaydarDbContext))]
-    [Migration("20251024191953_FinalSeedFix")]
-    partial class FinalSeedFix
+    [Migration("20260410120050_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,35 +32,158 @@ namespace AliHaydarBase.Api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IpAddress")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Metadata")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.BlogImages", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BlogId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsGallery")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.ToTable("BlogImages");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Blogs", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AuditLevel1Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AuditLevel2Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AuditLevel3Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpireAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PublishedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TargetRole")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Blogs");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Categories", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.ClaimDefinition", b =>
@@ -105,47 +228,142 @@ namespace AliHaydarBase.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ClaimDefinitions");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("a1bfe781-1f6a-465b-896e-6f233376b74d"),
-                            Category = "Access",
-                            CreatedAt = new DateTime(2025, 10, 24, 22, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "User's assigned department",
-                            Group = "Organizational",
-                            IsActive = true,
-                            IsVisibleToFrontend = true,
-                            Scope = "UserManagement",
-                            Type = "Department",
-                            UiHint = "ShowDepartmentScopedUI"
-                        },
-                        new
-                        {
-                            Id = new Guid("b2bfe781-1f6a-465b-896e-6f233376b74d"),
-                            Category = "Access",
-                            CreatedAt = new DateTime(2025, 10, 24, 22, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "User's security clearance level",
-                            Group = "Organizational",
-                            IsActive = true,
-                            IsVisibleToFrontend = true,
-                            Scope = "UserManagement",
-                            Type = "SecurityLevel",
-                            UiHint = "ShowSecurityLevelBadge"
-                        },
-                        new
-                        {
-                            Id = new Guid("c3bfe781-1f6a-465b-896e-6f233376b74d"),
-                            Category = "Permission",
-                            CreatedAt = new DateTime(2025, 10, 24, 22, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Permission to edit student grades",
-                            Group = "Academic",
-                            IsActive = true,
-                            IsVisibleToFrontend = true,
-                            Scope = "Academic",
-                            Type = "CanEditGrades",
-                            UiHint = "EnableGradeEditor"
-                        });
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("BackImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("BackLayoutJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CardHeightMm")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CardWidthMm")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Dpi")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("FrontImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("FrontLayoutJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IdCardTemplates");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.Member", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DateOfBirth")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastYearIdentityRenewal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegisterNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Members");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.PrintHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("PrintedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PrintedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("PrintHistories");
                 });
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.RefreshTokenEntry", b =>
@@ -164,11 +382,23 @@ namespace AliHaydarBase.Api.Migrations
                     b.Property<DateTime>("ExpiryTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Token")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAgent")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
@@ -208,22 +438,6 @@ namespace AliHaydarBase.Api.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "f1603dc4-c2ee-4974-b8ca-1105b4f6f1b9",
-                            Description = "For Not subscribed User",
-                            Name = "visitor",
-                            NormalizedName = "VISITOR"
-                        },
-                        new
-                        {
-                            Id = "a1111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-                            Description = "For App Admin",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        });
                 });
 
             modelBuilder.Entity("AliHaydarBase.Api.Core.Models.User", b =>
@@ -313,28 +527,6 @@ namespace AliHaydarBase.Api.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "u1111111-uuuu-uuuu-uuuu-uuuuuuuuuuuu",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "09cb0259-1714-4576-9a22-fca5b700817e",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "hay19732000@gmail.com",
-                            EmailConfirmed = true,
-                            FirstName = "HAYDER",
-                            LastName = "ALZEYAD",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "HAY19732000@GMAIL.COM",
-                            NormalizedUserName = "HAY19732000@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBHVJRSiK294d/4cDFS9xZ7GGNdlMo4Zqghw+JpfbTdRP4z2YlMflon/4iSVeZT//w==",
-                            PhoneNumberConfirmed = false,
-                            RefreshTokenExpiryTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            SecurityStamp = "UABF5YCL37DBZSJNMXTOXZ4QMQ3BEQRS",
-                            TwoFactorEnabled = false,
-                            UserName = "hay19732000@gmail.com"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -422,13 +614,6 @@ namespace AliHaydarBase.Api.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "u1111111-uuuu-uuuu-uuuu-uuuuuuuuuuuu",
-                            RoleId = "a1111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -448,6 +633,47 @@ namespace AliHaydarBase.Api.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.BlogImages", b =>
+                {
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Blogs.Blogs", "Blog")
+                        .WithMany("Images")
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Blog");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Blogs", b =>
+                {
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Blogs.Categories", "Category")
+                        .WithMany("Blogs")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.PrintHistory", b =>
+                {
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Members.Member", "Member")
+                        .WithMany("PrintHistories")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", "Template")
+                        .WithMany("PrintHistories")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -499,6 +725,26 @@ namespace AliHaydarBase.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Blogs", b =>
+                {
+                    b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Blogs.Categories", b =>
+                {
+                    b.Navigation("Blogs");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.IdCardTemplate", b =>
+                {
+                    b.Navigation("PrintHistories");
+                });
+
+            modelBuilder.Entity("AliHaydarBase.Api.Core.Models.Members.Member", b =>
+                {
+                    b.Navigation("PrintHistories");
                 });
 #pragma warning restore 612, 618
         }

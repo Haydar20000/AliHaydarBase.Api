@@ -25,6 +25,10 @@ namespace AliHaydarBase.Api.Core.Repositories
 
         public IBlogImagesRepository BlogImages { get; private set; }
 
+        public IMemberRepository Members { get; private set; }
+        public IPrintHistoryRepository PrintHistory { get; private set; }
+        public IIdCardTemplateRepository IdCardTemplates { get; private set; }
+
         public UnitOfWork(AliHaydarDbContext context)
         {
             _context = context;
@@ -35,6 +39,10 @@ namespace AliHaydarBase.Api.Core.Repositories
             Blogs = new BlogsRepository(_context);
             Categories = new CategoriesRepository(_context);
             BlogImages = new BlogImagesRepository(_context);
+            Members = new MemberRepository(_context);
+            PrintHistory = new PrintHistoryRepository(_context);
+            IdCardTemplates = new IdCardTemplateRepository(_context);
+
         }
 
         public async Task<int> Complete()

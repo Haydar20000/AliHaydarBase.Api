@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AliHaydarBase.Api.DTOs.Response
+namespace AliHaydarBase.Api.DTOs.Response.Authentication
 {
     public class SystemResponseDto
     {

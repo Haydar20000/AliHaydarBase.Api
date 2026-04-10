@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace AliHaydarBase.Api.Migrations
 {
     /// <inheritdoc />
@@ -66,17 +64,37 @@ namespace AliHaydarBase.Api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DeviceId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Metadata = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    DeviceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Metadata = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AuditLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IconName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsVisible = table.Column<bool>(type: "bit", nullable: false),
+                    IsDisabled = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -100,6 +118,52 @@ namespace AliHaydarBase.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IdCardTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FrontImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    BackImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    FrontLayoutJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BackLayoutJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    TemplateName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardWidthMm = table.Column<int>(type: "int", nullable: false),
+                    CardHeightMm = table.Column<int>(type: "int", nullable: false),
+                    Dpi = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IdCardTemplates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Members",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Stage = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RegisterNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateOfBirth = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastYearIdentityRenewal = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Members", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -109,7 +173,11 @@ namespace AliHaydarBase.Api.Migrations
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsRevoked = table.Column<bool>(type: "bit", nullable: false)
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacedByToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -222,34 +290,86 @@ namespace AliHaydarBase.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Description", "Name", "NormalizedName" },
-                values: new object[,]
+            migrationBuilder.CreateTable(
+                name: "Blogs",
+                columns: table => new
                 {
-                    { "15bfe781-1f6a-465b-896e-6f233376b74d", null, "For Not subscribed User", "visitor", "VISITOR" },
-                    { "22bfe781-1f6a-415b-896e-62233376b74d", null, "For App Admin", "Admin", "ADMIN" }
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AuditLevel1Approved = table.Column<bool>(type: "bit", nullable: false),
+                    AuditLevel2Approved = table.Column<bool>(type: "bit", nullable: false),
+                    AuditLevel3Approved = table.Column<bool>(type: "bit", nullable: false),
+                    PublishedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpireAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsVisible = table.Column<bool>(type: "bit", nullable: false),
+                    TargetRole = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Blogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Blogs_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FirstName", "ForthName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "SureName", "ThirdName", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "09cb0259-1714-4576-9a22-fca5b700817e", 0, "09cb0259-1714-4576-9a22-fca5b700817e", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "hay19732000@gmail.com", true, "HAYDER", null, "ALZEYAD", false, null, "HAY19732000@GMAIL.COM", "HAY19732000@GMAIL.COM", "AQAAAAIAAYagAAAAEBHVJRSiK294d/4cDFS9xZ7GGNdlMo4Zqghw+JpfbTdRP4z2YlMflon/4iSVeZT//w==", null, false, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "UABF5YCL37DBZSJNMXTOXZ4QMQ3BEQRS", null, null, false, "hay19732000@gmail.com" });
-
-            migrationBuilder.InsertData(
-                table: "ClaimDefinitions",
-                columns: new[] { "Id", "Category", "CreatedAt", "Description", "Group", "IsActive", "IsVisibleToFrontend", "Scope", "Type", "UiHint" },
-                values: new object[,]
+            migrationBuilder.CreateTable(
+                name: "PrintHistories",
+                columns: table => new
                 {
-                    { new Guid("a1bfe781-1f6a-465b-896e-6f233376b74d"), "Access", new DateTime(2025, 10, 24, 18, 33, 15, 154, DateTimeKind.Utc).AddTicks(927), "User's assigned department", "Organizational", true, true, "UserManagement", "Department", "ShowDepartmentScopedUI" },
-                    { new Guid("b2bfe781-1f6a-465b-896e-6f233376b74d"), "Access", new DateTime(2025, 10, 24, 18, 33, 15, 154, DateTimeKind.Utc).AddTicks(1385), "User's security clearance level", "Organizational", true, true, "UserManagement", "SecurityLevel", "ShowSecurityLevelBadge" },
-                    { new Guid("c3bfe781-1f6a-465b-896e-6f233376b74d"), "Permission", new DateTime(2025, 10, 24, 18, 33, 15, 154, DateTimeKind.Utc).AddTicks(1392), "Permission to edit student grades", "Academic", true, true, "Academic", "CanEditGrades", "EnableGradeEditor" }
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PrintedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PrintedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PrintHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PrintHistories_IdCardTemplates_TemplateId",
+                        column: x => x.TemplateId,
+                        principalTable: "IdCardTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PrintHistories_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "AspNetUserRoles",
-                columns: new[] { "RoleId", "UserId" },
-                values: new object[] { "22bfe781-1f6a-415b-896e-62233376b74d", "09cb0259-1714-4576-9a22-fca5b700817e" });
+            migrationBuilder.CreateTable(
+                name: "BlogImages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Caption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BlogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsGallery = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BlogImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BlogImages_Blogs_BlogId",
+                        column: x => x.BlogId,
+                        principalTable: "Blogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -289,6 +409,26 @@ namespace AliHaydarBase.Api.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlogImages_BlogId",
+                table: "BlogImages",
+                column: "BlogId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Blogs_CategoryId",
+                table: "Blogs",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PrintHistories_MemberId",
+                table: "PrintHistories",
+                column: "MemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PrintHistories_TemplateId",
+                table: "PrintHistories",
+                column: "TemplateId");
         }
 
         /// <inheritdoc />
@@ -313,7 +453,13 @@ namespace AliHaydarBase.Api.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
+                name: "BlogImages");
+
+            migrationBuilder.DropTable(
                 name: "ClaimDefinitions");
+
+            migrationBuilder.DropTable(
+                name: "PrintHistories");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
@@ -323,6 +469,18 @@ namespace AliHaydarBase.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Blogs");
+
+            migrationBuilder.DropTable(
+                name: "IdCardTemplates");
+
+            migrationBuilder.DropTable(
+                name: "Members");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
         }
     }
 }

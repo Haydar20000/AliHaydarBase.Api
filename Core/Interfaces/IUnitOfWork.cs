@@ -17,7 +17,9 @@ namespace AliHaydarBase.Api.Core.Interfaces
         IBlogsRepository Blogs { get; }
         ICategoriesRepository Categories { get; }
         IBlogImagesRepository BlogImages { get; }
+        IMemberRepository Members { get; }
+        IPrintHistoryRepository PrintHistory { get; }
+        IIdCardTemplateRepository IdCardTemplates { get; }
         Task<int> Complete();
-
     }
 }

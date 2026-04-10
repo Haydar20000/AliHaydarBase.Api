@@ -9,9 +9,9 @@ namespace AliHaydarBase.Api.DTOs.Request
 {
     public class LoginRequestDto
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string DeviceId { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string DeviceId { get; set; }
         public string? UserAgent { get; set; }
         public string? IpAddress { get; set; }
     }

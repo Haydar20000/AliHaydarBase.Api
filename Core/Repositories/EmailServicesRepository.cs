@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
+using AliHaydarBase.Api.DTOs.Response.Authentication;
 
 namespace AliHaydarBase.Api.Core.Repositories
 {

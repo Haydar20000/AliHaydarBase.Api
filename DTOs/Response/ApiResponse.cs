@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AliHaydarBase.Api.DTOs.Response.Blogs
+namespace AliHaydarBase.Api.DTOs.Response
 {
     public class ApiResponse<T>
     {

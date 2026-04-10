@@ -4,6 +4,7 @@ using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.DTOs.Request;
 using AliHaydarBase.Api.DTOs.Response;
+using AliHaydarBase.Api.DTOs.Response.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 namespace AliHaydarBase.Api.Endpoints
@@ -126,8 +127,6 @@ namespace AliHaydarBase.Api.Endpoints
             });
 
             // all is well until here
-
-
             group.MapPost("/validate", (string token, IAuthRepository repo) =>
             {
                 var response = repo.ValidateToken(token);
@@ -136,7 +135,6 @@ namespace AliHaydarBase.Api.Endpoints
                     : Results.Json(response, statusCode: StatusCodes.Status401Unauthorized);
             });
 
-
             group.MapPost("/resendEmailConfirmation", async (ResendEmailConfirmationRequestDto dto, IAuthRepository repo) =>
             {
                 var response = await repo.ResendEmailConfirmation(dto);
@@ -144,10 +142,6 @@ namespace AliHaydarBase.Api.Endpoints
                     ? Results.Ok(response)
                     : Results.BadRequest(response);
             });
-
-
-
-
 
             group.MapPost("/validate-token", (TokenValidationRequestDto request, IAuthRepository authRepo) =>
             {
