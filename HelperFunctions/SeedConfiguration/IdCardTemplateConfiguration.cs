@@ -14,9 +14,8 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
         {
             builder.HasKey(x => x.Id);
 
-            builder.HasMany(x => x.PrintHistories)
-                   .WithOne(x => x.Template)
-                   .HasForeignKey(x => x.TemplateId);
+            builder.HasMany(x => x.PrintHistories).WithOne()
+            .HasForeignKey(x => x.TemplateId);
 
             builder.HasData(new IdCardTemplate
             {

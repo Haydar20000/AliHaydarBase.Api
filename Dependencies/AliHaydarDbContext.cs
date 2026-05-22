@@ -1,6 +1,7 @@
 using AliHaydarBase.Api.Core.Models;
 using AliHaydarBase.Api.Core.Models.Blogs;
 using AliHaydarBase.Api.Core.Models.Members;
+using AliHaydarBase.Api.Core.Models.MonitoringData;
 using AliHaydarBase.Api.HelperFunctions.SeedConfiguration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,6 @@ namespace AliHaydarBase.Api.Dependencies
         public DbSet<Member> Members { get; set; }
         public DbSet<IdCardTemplate> IdCardTemplates { get; set; }
         public DbSet<PrintHistory> PrintHistories { get; set; }
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

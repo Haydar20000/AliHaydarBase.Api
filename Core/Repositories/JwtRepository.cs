@@ -39,6 +39,12 @@ namespace AliHaydarBase.Api.Core.Repositories
                     claims.Add(new Claim("device_id", request.DeviceId));
                 }
 
+                // Always add city claim
+                claims.Add(new Claim("city", request.User.City ?? ""));
+
+                // Always add full name claim
+                claims.Add(new Claim("full_name", request.User.FullName ?? ""));
+
                 var token = CreateJwtToken(credentials, claims);
 
                 return new JwtResponseDto

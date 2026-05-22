@@ -14,6 +14,7 @@ namespace AliHaydarBase.Api.Core.Models
         public string? ForthName { get; set; }
         public string? SureName { get; set; }
         public string? FullName => $"{FirstName} {LastName} {ThirdName} {ForthName} {SureName}".Trim();
+        public string? City { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }

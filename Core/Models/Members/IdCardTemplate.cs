@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AliHaydarBase.Api.Core.Models.MonitoringData;
 
 namespace AliHaydarBase.Api.Core.Models.Members
 {

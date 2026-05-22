@@ -422,7 +422,15 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            // 4️⃣ Generate access token
+            // 4️⃣ Ensure user has a city assigned
+            if (string.IsNullOrWhiteSpace(user.City))
+            {
+                response.Errors.Add("Your account is not assigned to any city. Contact the administrator.");
+                response.IsSuccessful = false;
+                return response;
+            }
+
+            // 5️⃣ Generate access token
             var roles = await _userManager.GetRolesAsync(user);
             var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
@@ -439,7 +447,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            // 5️⃣ Generate refresh token
+            // 6️⃣ Generate refresh token
             var refreshTokenResult = _jwt.GenerateRefreshToken();
             if (!refreshTokenResult.IsSuccessful || string.IsNullOrWhiteSpace(refreshTokenResult.RefreshToken))
             {
@@ -449,7 +457,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 return response;
             }
 
-            // 6️⃣ Persist refresh token in both User and RefreshTokens table
+            // 7️⃣ Persist refresh token in both User and RefreshTokens table
             user.RefreshToken = refreshTokenResult.RefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Jwt:ExpirationInDays"));
             await _userManager.UpdateAsync(user);
@@ -469,7 +477,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntry);
             await _unitOfWork.Complete();
 
-            // 7️⃣ Build response
+            // 8️⃣ Build response 
             response.Token = jwtResponse.Token;
             response.RefreshToken = refreshTokenResult.RefreshToken;
             response.IsSuccessful = true;

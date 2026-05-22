@@ -7,12 +7,20 @@ namespace AliHaydarBase.Api.DTOs.Response.Members
 {
     public class MemberRowDto
     {
-        public string Id { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Stage { get; set; } = string.Empty;
-        public string RegisterNumber { get; set; } = string.Empty;
-        public string LastYearIdentityRenewal { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+
+        public string FullNameArabic { get; set; }
+        public string FullNameEnglish { get; set; }
+
+        public string Stage { get; set; }
+        public string RegisterNumber { get; set; }
+        public string City { get; set; }
+
+        public string LastYearIdentityRenewal { get; set; }
+        public string ImageUrl { get; set; }
+
+        public bool IsIdPrinted { get; set; }
+        public bool IsBlockedByAdmin { get; set; }
     }
+
 }

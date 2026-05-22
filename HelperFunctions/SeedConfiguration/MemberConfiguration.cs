@@ -21,10 +21,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    FullName = "Ali Haydar",
+                    FullNameArabic = "Ali Haydar",
                     Stage = "Stage 1",
                     RegisterNumber = "REG-001",
-                    Status = "Active",
                     City = "Baghdad",
                     Phone = "07700000001",
                     Email = "ali.haydar@example.com",
@@ -36,10 +35,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    FullName = "Sara Mahmood",
+                    FullNameArabic = "Sara Mahmood",
                     Stage = "Stage 2",
                     RegisterNumber = "REG-002",
-                    Status = "Active",
                     City = "Basra",
                     Phone = "07700000002",
                     Email = "sara.mahmood@example.com",
@@ -51,10 +49,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    FullName = "Omar Khalid",
+                    FullNameArabic = "Omar Khalid",
                     Stage = "Stage 3",
                     RegisterNumber = "REG-003",
-                    Status = "Inactive",
                     City = "Mosul",
                     Phone = "07700000003",
                     Email = "omar.khalid@example.com",
@@ -66,10 +63,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                    FullName = "Lina Ahmed",
+                    FullNameArabic = "Lina Ahmed",
                     Stage = "Stage 1",
                     RegisterNumber = "REG-004",
-                    Status = "Active",
                     City = "Baghdad",
                     Phone = "07700000004",
                     Email = "lina.ahmed@example.com",
@@ -81,10 +77,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
-                    FullName = "Hassan Jabar",
+                    FullNameArabic = "Hassan Jabar",
                     Stage = "Stage 2",
                     RegisterNumber = "REG-005",
-                    Status = "Active",
                     City = "Najaf",
                     Phone = "07700000005",
                     Email = "hassan.jabar@example.com",
@@ -96,10 +91,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
-                    FullName = "Noor Al‑Zahra",
+                    FullNameArabic = "Noor Al‑Zahra",
                     Stage = "Stage 3",
                     RegisterNumber = "REG-006",
-                    Status = "Active",
                     City = "Karbala",
                     Phone = "07700000006",
                     Email = "noor.zahra@example.com",
@@ -111,10 +105,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
-                    FullName = "Mustafa Ali",
+                    FullNameArabic = "Mustafa Ali",
                     Stage = "Stage 1",
                     RegisterNumber = "REG-007",
-                    Status = "Inactive",
                     City = "Baghdad",
                     Phone = "07700000007",
                     Email = "mustafa.ali@example.com",
@@ -126,10 +119,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("88888888-8888-8888-8888-888888888888"),
-                    FullName = "Fatima Kareem",
+                    FullNameArabic = "Fatima Kareem",
                     Stage = "Stage 2",
                     RegisterNumber = "REG-008",
-                    Status = "Active",
                     City = "Basra",
                     Phone = "07700000008",
                     Email = "fatima.kareem@example.com",
@@ -141,10 +133,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("99999999-9999-9999-9999-999999999999"),
-                    FullName = "Yasir Salman",
+                    FullNameArabic = "Yasir Salman",
                     Stage = "Stage 3",
                     RegisterNumber = "REG-009",
-                    Status = "Active",
                     City = "Erbil",
                     Phone = "07700000009",
                     Email = "yasir.salman@example.com",
@@ -156,10 +147,9 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                 new Member
                 {
                     Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                    FullName = "Rana Saeed",
+                    FullNameArabic = "Rana Saeed",
                     Stage = "Stage 1",
                     RegisterNumber = "REG-010",
-                    Status = "Active",
                     City = "Sulaymaniyah",
                     Phone = "07700000010",
                     Email = "rana.saeed@example.com",

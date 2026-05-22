@@ -21,14 +21,14 @@ namespace AliHaydarBase.Api.Core.Repositories
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(m =>
-                    m.FullName.Contains(search) ||
+                    m.FullNameArabic.Contains(search) ||
                     m.RegisterNumber.Contains(search));
             }
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderBy(m => m.FullName)
+                .OrderBy(m => m.FullNameArabic)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

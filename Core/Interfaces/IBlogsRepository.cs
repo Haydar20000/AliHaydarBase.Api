@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Models.Blogs;
+using AliHaydarBase.Api.Core.Models.Common;
 using AliHaydarBase.Api.DTOs.Response.Blogs;
 
 namespace AliHaydarBase.Api.Core.Interfaces

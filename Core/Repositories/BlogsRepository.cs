@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models.Blogs;
+using AliHaydarBase.Api.Core.Models.Common;
 using AliHaydarBase.Api.Dependencies;
 using AliHaydarBase.Api.DTOs.Response.Blogs;
 using Microsoft.EntityFrameworkCore;
@@ -39,11 +40,8 @@ namespace AliHaydarBase.Api.Core.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new PagedResult<Blogs>
-            {
-                Items = items,
-                TotalCount = totalCount
-            };
+            return new PagedResult<Blogs>(items, totalCount, page, pageSize);
+
         }
 
         public async Task<List<Blogs>> GetBlogsByCategoryAsync(Guid categoryId)
