@@ -19,7 +19,55 @@ namespace AliHaydarBase.Api.Endpoints
             group.MapGet("/print-history", GetPrintHistory).RequireAuthorization();
             group.MapGet("/print-history/{id:guid}", GetPrintHistoryById).RequireAuthorization();
             group.MapDelete("/print-history/{id:guid}", DeletePrintHistory).RequireAuthorization();
+            group.MapPost("/print-history/export", LogExport).RequireAuthorization();
         }
+        // ---------------------------------------------------------
+        // POST /api/monitoring/print-history/export
+        // ---------------------------------------------------------
+        private static async Task<IResult> LogExport(
+     PrintHistoryCreateDto dto,
+     IUnitOfWork unitOfWork,
+     ClaimsPrincipal user)
+        {
+            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+            {
+                return Results.Json(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Unauthorized user"
+                }, statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            var entity = new PrintHistory
+            {
+                Id = Guid.NewGuid(),
+                MemberId = dto.MemberId,
+                MemberName = dto.MemberName,
+                TemplateId = dto.TemplateId,
+                TemplateName = dto.TemplateName,
+                PrintMode = dto.PrintMode, // "Export"
+                PrintedAtUtc = DateTime.UtcNow,
+                FrontThumbnailBase64 = dto.FrontThumbnailBase64,
+                BackThumbnailBase64 = dto.BackThumbnailBase64,
+                UserId = userId,
+
+                // ⭐ NEW
+                ActionType = dto.ActionType // ExportPNG / ExportPDF
+            };
+
+            await unitOfWork.PrintHistory.AddAsync(entity);
+            await unitOfWork.Complete();
+
+            return Results.Ok(new ApiResponse<Guid>
+            {
+                Success = true,
+                Message = "Export history saved successfully",
+                Data = entity.Id
+            });
+        }
+
 
         // ---------------------------------------------------------
         // POST /api/monitoring/print-history
@@ -52,7 +100,9 @@ namespace AliHaydarBase.Api.Endpoints
                 PrintedAtUtc = DateTime.UtcNow,
                 FrontThumbnailBase64 = dto.FrontThumbnailBase64,
                 BackThumbnailBase64 = dto.BackThumbnailBase64,
+                ActionType = dto.ActionType,
                 UserId = userId
+
             };
 
             await unitOfWork.PrintHistory.AddAsync(entity);

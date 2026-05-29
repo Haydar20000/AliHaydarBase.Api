@@ -17,6 +17,7 @@ namespace AliHaydarBase.Api.DTOs.Request.MonitoringDataDtos
         public DateTime PrintedAtUtc { get; set; }
         public string FrontThumbnailBase64 { get; set; } = string.Empty;
         public string BackThumbnailBase64 { get; set; } = string.Empty;
+        public string ActionType { get; set; } = "Print";
     }
 
 }

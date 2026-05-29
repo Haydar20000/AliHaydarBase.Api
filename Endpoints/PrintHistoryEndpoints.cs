@@ -37,26 +37,59 @@ namespace AliHaydarBase.Api.Endpoints
             group.MapGet("/logs", GetActivityLogs)
                 .RequireAuthorization();
 
+            group.MapGet("/admins", GetAdminUsers)
+                .RequireAuthorization();
+
         }
+
+        /// <summary>
+        /// GET /api/print-history/admins
+        /// Returns a list of all admin users (Id + FullName)
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <returns></returns>
+        private static async Task<IResult> GetAdminUsers(IUnitOfWork unitOfWork)
+        {
+            // Return ALL users (because DB does not store roles)
+            var admins = await unitOfWork.User
+                .Query()
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = u.FullName,
+                })
+                .ToListAsync();
+
+            return Results.Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Admin users retrieved successfully",
+                Data = admins
+            });
+        }
+
 
         // ---------------------------------------------------------
         // GET /api/print-history/paged
         // Unified endpoint (filters + search + sorting + pagination)
         // ---------------------------------------------------------
         private static async Task<IResult> GetPagedHistory(
-            IUnitOfWork unitOfWork,
-            IMapper mapper,
-            ClaimsPrincipal user,
-            int page = 1,
-            int pageSize = 20,
-            string? city = null,
-            string? search = null,
-            string? template = null,
-            string? mode = null,
-            DateTime? from = null,
-            DateTime? to = null,
-            string sortBy = "PrintedAt",
-            string sortDir = "desc")
+    IUnitOfWork unitOfWork,
+    IMapper mapper,
+    ClaimsPrincipal user,
+    int page = 1,
+    int pageSize = 20,
+    string? city = null,
+    string? search = null,
+    string? template = null,
+    string? mode = null,
+    DateTime? from = null,
+    DateTime? to = null,
+    string sortBy = "PrintedAt",
+    string sortDir = "desc",
+    string? actionType = null,
+    string? adminUser = null,
+    string? memberId = null)
         {
             if (page <= 0 || pageSize <= 0)
             {
@@ -75,18 +108,80 @@ namespace AliHaydarBase.Api.Endpoints
             if (!isAdmin)
                 city = userCity;
 
-            // Query repository
-            var result = await unitOfWork.PrintHistory.GetPagedHistoryAsync(
-                page, pageSize, city, search, template, mode, from, to, sortBy, sortDir);
+            // Base query
+            var query = unitOfWork.PrintHistory.Query();
 
-            // Map to DTO
-            var dto = mapper.Map<PagedResult<PrintHistoryRowDto>>(result);
+            // -----------------------------
+            // ⭐ Apply Filters (Exact Match)
+            // -----------------------------
+
+            if (!string.IsNullOrWhiteSpace(city))
+                query = query.Where(h => h.Member.City == city);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(h =>
+                    h.Member.FullNameArabic.Contains(search) ||
+                    h.Member.RegisterNumber.Contains(search));
+
+            if (!string.IsNullOrWhiteSpace(template))
+                query = query.Where(h => h.TemplateName == template);
+
+            if (!string.IsNullOrWhiteSpace(mode))
+                query = query.Where(h => h.PrintMode == mode);
+
+            if (from.HasValue)
+                query = query.Where(h => h.PrintedAtUtc >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(h => h.PrintedAtUtc <= to.Value);
+
+            // ⭐ NEW FILTERS (Exact Match)
+            if (!string.IsNullOrWhiteSpace(actionType))
+                query = query.Where(h => h.ActionType == actionType);
+
+            if (!string.IsNullOrWhiteSpace(adminUser))
+                query = query.Where(h => h.UserId.ToString() == adminUser);
+
+            if (!string.IsNullOrWhiteSpace(memberId))
+                query = query.Where(h => h.Member.RegisterNumber == memberId);
+
+            // -----------------------------
+            // ⭐ Sorting
+            // -----------------------------
+            query = sortBy switch
+            {
+                "MemberName" => (sortDir == "asc")
+                    ? query.OrderBy(h => h.Member.FullNameArabic)
+                    : query.OrderByDescending(h => h.Member.FullNameArabic),
+
+                "TemplateName" => (sortDir == "asc")
+                    ? query.OrderBy(h => h.TemplateName)
+                    : query.OrderByDescending(h => h.TemplateName),
+
+                _ => (sortDir == "asc")
+                    ? query.OrderBy(h => h.PrintedAtUtc)
+                    : query.OrderByDescending(h => h.PrintedAtUtc)
+            };
+
+            // -----------------------------
+            // ⭐ Pagination
+            // -----------------------------
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dto = mapper.Map<List<PrintHistoryRowDto>>(items);
+
+            var paged = new PagedResult<PrintHistoryRowDto>(dto, total, page, pageSize);
 
             return Results.Ok(new ApiResponse<PagedResult<PrintHistoryRowDto>>
             {
                 Success = true,
                 Message = "Paged print history retrieved successfully",
-                Data = dto
+                Data = paged
             });
         }
 

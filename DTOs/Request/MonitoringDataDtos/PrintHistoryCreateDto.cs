@@ -14,6 +14,7 @@ namespace AliHaydarBase.Api.DTOs.Request.MonitoringDataDtos
         public string PrintMode { get; set; } = string.Empty;
         public string FrontThumbnailBase64 { get; set; } = string.Empty;
         public string BackThumbnailBase64 { get; set; } = string.Empty;
+        public string ActionType { get; set; } = "Print";
     }
 
 }
