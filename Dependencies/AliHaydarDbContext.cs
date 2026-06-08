@@ -23,6 +23,7 @@ namespace AliHaydarBase.Api.Dependencies
         public DbSet<Member> Members { get; set; }
         public DbSet<IdCardTemplate> IdCardTemplates { get; set; }
         public DbSet<PrintHistory> PrintHistories { get; set; }
+        public DbSet<TemplateVersion> TemplateVersions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

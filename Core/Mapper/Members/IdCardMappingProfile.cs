@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AliHaydarBase.Api.Core.Models.Members;
 using AliHaydarBase.Api.Core.Models.MonitoringData;
 using AliHaydarBase.Api.DTOs.Request.MonitoringDataDtos;
+using AliHaydarBase.Api.DTOs.Request.Template;
 using AliHaydarBase.Api.DTOs.Response.Members;
 using AutoMapper;
 
@@ -38,6 +39,9 @@ namespace AliHaydarBase.Api.Core.Mapper.Members
                  .ForMember(d => d.FrontThumbnailBase64, o => o.MapFrom(s => s.FrontThumbnailBase64))
                  .ForMember(d => d.RegisterNumber, o => o.MapFrom(s => s.Member.RegisterNumber))
                  .ForMember(d => d.BackThumbnailBase64, o => o.MapFrom(s => s.BackThumbnailBase64));
+            // TemplateVersion → TemplateVersionDto
+            CreateMap<TemplateVersion, TemplateVersionDto>().ReverseMap();
+
 
         }
     }

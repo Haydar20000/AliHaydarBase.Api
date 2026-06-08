@@ -11,22 +11,20 @@ namespace AliHaydarBase.Api.Core.Repositories
 {
     public class RefreshTokenEntryRepositories : Repository<RefreshTokenEntry>, IRefreshTokenEntryRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public RefreshTokenEntryRepositories(AliHaydarDbContext context, IUnitOfWork unitOfWork) : base(context)
+        public RefreshTokenEntryRepositories(AliHaydarDbContext context)
+       : base(context)
         {
-            _unitOfWork = unitOfWork;
-        }
-
-
-        public async Task DeleteRangeAsync(IEnumerable<RefreshTokenEntry> tokens)
-        {
-            _ = _unitOfWork.RefreshTokens.DeleteRangeAsync(tokens);
-            await _unitOfWork.Complete();
         }
 
         public async Task<IEnumerable<RefreshTokenEntry>> GetRevokedTokensOlderThanAsync(DateTime cutoff)
         {
-            return await _unitOfWork.RefreshTokens.FindAsync(t => t.IsRevoked && t.RevokedAt < cutoff);
+            return await FindAsync(t => t.IsRevoked && t.RevokedAt < cutoff);
+        }
+
+        public async Task DeleteRangeAsync(IEnumerable<RefreshTokenEntry> tokens)
+        {
+            foreach (var token in tokens)
+                await DeleteAsync(token.Id);
         }
     }
 }

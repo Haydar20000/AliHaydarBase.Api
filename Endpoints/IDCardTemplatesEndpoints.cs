@@ -14,6 +14,35 @@ namespace AliHaydarBase.Api.Endpoints
 
             group.MapGet("/", GetAllTemplates);
             group.MapGet("/{id:guid}", GetTemplateById);
+            group.MapPut("/{id:guid}", UpdateTemplate);
+        }
+        private static async Task<IResult> UpdateTemplate(
+            Guid id,
+            IdCardTemplateDto dto,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
+        {
+            var template = await unitOfWork.IdCardTemplates.GetTemplateAsync(id);
+
+            if (template == null)
+            {
+                return Results.NotFound(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Template not found"
+                });
+            }
+
+            // Map updated fields
+            mapper.Map(dto, template);
+
+            await unitOfWork.Complete();
+
+            return Results.Ok(new ApiResponse<string>
+            {
+                Success = true,
+                Message = "Template updated successfully"
+            });
         }
 
         private static async Task<IResult> GetAllTemplates(

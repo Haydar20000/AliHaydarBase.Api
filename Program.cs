@@ -47,6 +47,7 @@ app.MapPrintHistoryEndpoints(); // 🖨️ Print history routes
 app.MapMembersEndpoints();       // 👤 Member management routes
 app.MapBlogsEndpoints();         // 📝 Blog management routes
 app.MapBlogImagesEndpoints();    // 🖼️ Blog image management routes
-
+app.MapIDCardTemplatesEndpoints(); // 🆔 ID card template routes
+app.MapTemplateVersionsEndpoints(); // 🆔 ID card template version routes
 
 app.Run(); // 🏁 Start the application

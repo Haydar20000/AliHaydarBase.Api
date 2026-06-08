@@ -20,6 +20,7 @@ namespace AliHaydarBase.Api.Core.Interfaces
         IMemberRepository Members { get; }
         IPrintHistoryRepository PrintHistory { get; }
         IIdCardTemplateRepository IdCardTemplates { get; }
+        ITemplateVersionRepository TemplateVersions { get; }
         Task<int> Complete();
     }
 }

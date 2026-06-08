@@ -28,6 +28,7 @@ namespace AliHaydarBase.Api.Core.Repositories
         public IMemberRepository Members { get; private set; }
         public IPrintHistoryRepository PrintHistory { get; private set; }
         public IIdCardTemplateRepository IdCardTemplates { get; private set; }
+        public ITemplateVersionRepository TemplateVersions { get; private set; }
 
         public UnitOfWork(AliHaydarDbContext context)
         {
@@ -42,6 +43,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             Members = new MemberRepository(_context);
             PrintHistory = new PrintHistoryRepository(_context);
             IdCardTemplates = new IdCardTemplateRepository(_context);
+            TemplateVersions = new TemplateVersionRepository(_context);
 
         }
 
