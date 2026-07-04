@@ -9,11 +9,9 @@ namespace AliHaydarBase.Api.Core.Models.Members
     public class Member
     {
         public Guid Id { get; set; }
-
         // Names
         public string FullNameArabic { get; set; } = string.Empty;
         public string FullNameEnglish { get; set; } = string.Empty;
-
         // Basic info
         public string Stage { get; set; }
         public string City { get; set; }

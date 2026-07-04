@@ -76,7 +76,11 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
 
         // 🧩 AutoMapper
-        services.AddAutoMapper(typeof(IdCardMappingProfile));
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddMaps(typeof(IdCardMappingProfile).Assembly);
+        });
+
 
         // 🧹 Background service
         services.AddHostedService<TokenCleanupService>();
