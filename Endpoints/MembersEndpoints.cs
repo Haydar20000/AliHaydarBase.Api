@@ -40,10 +40,14 @@ namespace AliHaydarBase.Api.Endpoints
             int page,
             int pageSize,
             string? search,
+            string? sortBy,
+            string? sortDir,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ClaimsPrincipal user)
         {
+            Console.WriteLine("BACKEND REQUEST RECEIVED: " + DateTime.Now.ToString("HH:mm:ss.fff"));
+
             if (page <= 0 || pageSize <= 0)
             {
                 return Results.BadRequest(new ApiResponse<string>
@@ -60,7 +64,7 @@ namespace AliHaydarBase.Api.Endpoints
             var isAdmin = user.IsInRole("Admin");
 
             // 3. Fetch paged members
-            var paged = await unitOfWork.Members.GetPagedMembersAsync(page, pageSize, search ?? "");
+            var paged = await unitOfWork.Members.GetPagedMembersAsync(page, pageSize, search ?? "", sortBy, sortDir);
 
             // 4. Filter by city if NOT admin
             if (!isAdmin && !string.IsNullOrEmpty(userCity))

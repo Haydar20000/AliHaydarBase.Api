@@ -7,6 +7,7 @@ using AliHaydarBase.Api.Core.Models.MonitoringData;
 using AliHaydarBase.Api.DTOs.Request.MonitoringDataDtos;
 using AliHaydarBase.Api.DTOs.Request.Template;
 using AliHaydarBase.Api.DTOs.Response.Members;
+using AliHaydarBase.Api.HelperFunctions;
 using AutoMapper;
 
 namespace AliHaydarBase.Api.Core.Mapper.Members
@@ -19,7 +20,18 @@ namespace AliHaydarBase.Api.Core.Mapper.Members
             CreateMap<Member, MemberRowDto>();
 
             // Member → MemberDetailsDto
-            CreateMap<Member, MemberDetailsDto>();
+            CreateMap<Member, MemberRowDto>()
+                .ForMember(d => d.FullNameArabic, o => o.MapFrom(s => s.FullNameArabic))
+                .ForMember(d => d.FullNameEnglish, o => o.MapFrom(s => s.FullNameEnglish))
+                .ForMember(d => d.Stage, o => o.MapFrom(s => s.Stage))
+                .ForMember(d => d.RegisterDate, o => o.MapFrom(s => DateTime.Parse(s.RegisterDate)))
+                .ForMember(d => d.DateOfBirth, o => o.MapFrom(s => DateTime.Parse(s.DateOfBirth)))
+                .ForMember(d => d.LastYearIdentityRenewal, o => o.MapFrom(s => new DateTime(int.Parse(s.LastYearIdentityRenewal), 1, 1)))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.IsBlockedByAdmin ? "Blocked" : "Active"))
+                .ForMember(d => d.ImageBase64, o => o.MapFrom(s => ImageHelper.ConvertImageUrlToBase64(s.ImageUrl)))
+                .ForMember(d => d.IsPrinted, o => o.MapFrom(s => s.IsIdPrinted))
+                .ForMember(d => d.IsBlockedByAdmin, o => o.MapFrom(s => s.IsBlockedByAdmin));
+
 
             // PrintHistory → PrintHistoryRecord
             CreateMap<PrintHistory, PrintHistoryRecord>();

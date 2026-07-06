@@ -9,6 +9,6 @@ namespace AliHaydarBase.Api.Core.Interfaces
 {
     public interface IMemberRepository : IRepository<Member>
     {
-        Task<PagedResult<Member>> GetPagedMembersAsync(int page, int pageSize, string search);
+        Task<PagedResult<Member>> GetPagedMembersAsync(int page, int pageSize, string search, string? sortBy, string? sortDir);
     }
 }
