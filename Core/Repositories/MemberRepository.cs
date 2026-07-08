@@ -19,6 +19,7 @@ namespace AliHaydarBase.Api.Core.Repositories
             var query = Query();
 
             if (!string.IsNullOrWhiteSpace(search))
+
             {
                 query = query.Where(m =>
                     m.FullNameArabic.Contains(search) ||

@@ -12,6 +12,8 @@ namespace AliHaydarBase.Api.Core.Models.Common
         public int Page { get; set; }
         public int PageSize { get; set; }
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+        public int Start { get; set; }
+        public int End { get; set; }
         public PagedResult() { } // <-- Add this
 
         public PagedResult(List<T> items, int totalCount, int page, int pageSize)
@@ -20,6 +22,8 @@ namespace AliHaydarBase.Api.Core.Models.Common
             TotalCount = totalCount;
             Page = page;
             PageSize = pageSize;
+            Start = (Page - 1) * PageSize + 1;
+            End = Math.Min(Page * PageSize, TotalCount);
         }
     }
 }
