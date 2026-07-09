@@ -31,7 +31,47 @@ namespace AliHaydarBase.Api.Endpoints
 
             group.MapPost("/unblock/{id:guid}", UnblockMember)
                  .RequireAuthorization(); // Admin only
+                                          // Fetch multiple members by IDs (for Print Selected)
+            group.MapPost("/ids", GetMembersBatch);
+            group.MapPost("/print", GetMembersForPrint);
+            // GET /api/members/all
+            group.MapGet("/all", GetAllMembers);
+
         }
+        private static async Task<IResult> GetAllMembers(IUnitOfWork repo)
+        {
+            try
+            {
+                var members = await repo.Members.GetAllMembersAsync();
+
+                var xx = Results.Ok(new ApiResponse<List<MemberRowDto>>
+                {
+                    Success = true,
+                    Message = "Members loaded successfully.",
+                    Data = members,
+                    Errors = null
+                });
+                return xx;
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new ApiResponse<List<MemberRowDto>>
+                {
+                    Success = false,
+                    Message = "Failed to load members.",
+                    Data = null,
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+
+        private static async Task<IResult> GetMembersForPrint(IUnitOfWork repo, List<Guid> memberIds)
+        {
+            var members = await repo.Members.GetMembersForPrintAsync(memberIds);
+            return Results.Ok(members);
+        }
+
 
         // ---------------------------------------------------------
         // GET /api/members?page=1&pageSize=20&search=ali
@@ -181,7 +221,14 @@ namespace AliHaydarBase.Api.Endpoints
                 Message = "Member blocked successfully"
             });
         }
-
+        // ---------------------------------------------------------
+        // POST /api/members/batch
+        // ---------------------------------------------------------
+        private static async Task<IResult> GetMembersBatch(IUnitOfWork repo, List<Guid> memberIds)
+        {
+            var members = await repo.Members.GetMembersByIdsAsync(memberIds);
+            return Results.Ok(members);
+        }
         // ---------------------------------------------------------
         // POST /api/members/unblock/{id}
         // ---------------------------------------------------------
@@ -211,6 +258,7 @@ namespace AliHaydarBase.Api.Endpoints
                 Message = "Member unblocked successfully"
             });
         }
+
     }
 
 }

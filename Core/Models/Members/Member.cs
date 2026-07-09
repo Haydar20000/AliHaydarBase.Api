@@ -17,8 +17,8 @@ namespace AliHaydarBase.Api.Core.Models.Members
         public string City { get; set; }
         public string Phone { get; set; }
         public string RegisterNumber { get; set; }
-        public string RegisterDate { get; set; }
-        public string DateOfBirth { get; set; }
+        public DateTime RegisterDate { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string JobTitle { get; set; }
         public string IdNumber { get; set; }
         public string Email { get; set; }
@@ -30,7 +30,7 @@ namespace AliHaydarBase.Api.Core.Models.Members
 
         // Issuance info
         public DateTime IssuanceDate { get; set; }
-        public string LastYearIdentityRenewal { get; set; }
+        public DateTime LastYearIdentityRenewal { get; set; }
 
         // Image
         public string ImageUrl { get; set; }

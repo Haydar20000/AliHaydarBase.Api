@@ -6,6 +6,7 @@ using AliHaydarBase.Api.Core.Interfaces;
 using AliHaydarBase.Api.Core.Models.Common;
 using AliHaydarBase.Api.Core.Models.Members;
 using AliHaydarBase.Api.Dependencies;
+using AliHaydarBase.Api.DTOs.Response.Members;
 using Microsoft.EntityFrameworkCore;
 
 namespace AliHaydarBase.Api.Core.Repositories
@@ -13,6 +14,70 @@ namespace AliHaydarBase.Api.Core.Repositories
     public class MemberRepository : Repository<Member>, IMemberRepository
     {
         public MemberRepository(AliHaydarDbContext context) : base(context) { }
+
+        public async Task<List<MemberRowDto>> GetAllMembersAsync()
+        {
+            var items = await Query().ToListAsync();
+
+            return items.Select(m => new MemberRowDto
+            {
+                Id = m.Id,
+                FullNameArabic = m.FullNameArabic,
+                FullNameEnglish = m.FullNameEnglish,
+
+                Stage = m.Stage,
+                RegisterNumber = m.RegisterNumber,
+
+                City = m.City,
+                Phone = m.Phone,
+
+                DateOfBirth = m.DateOfBirth,
+                RegisterDate = m.RegisterDate,
+                LastYearIdentityRenewal = m.LastYearIdentityRenewal,
+
+                Status = m.IsBlockedByAdmin ? "Blocked" : "Active",
+                ImageBase64 = m.ImageUrl,
+
+                IsPrinted = m.IsIdPrinted,
+                IsBlockedByAdmin = m.IsBlockedByAdmin
+            }).ToList();
+        }
+        public async Task<List<Member>> GetMembersByIdsAsync(List<Guid> memberIds)
+        {
+            return await Query()
+                .Where(m => memberIds.Contains(m.Id))
+                .ToListAsync();
+        }
+        public async Task<List<MemberRowDto>> GetMembersForPrintAsync(List<Guid> memberIds)
+        {
+            var items = await Query()
+                .Where(m => memberIds.Contains(m.Id))
+                .ToListAsync();
+
+            return items.Select(m => new MemberRowDto
+            {
+                Id = m.Id,
+                FullNameArabic = m.FullNameArabic,
+                FullNameEnglish = m.FullNameEnglish,
+
+                Stage = m.Stage,
+                RegisterNumber = m.RegisterNumber,
+
+                City = m.City,
+                Phone = m.Phone,
+
+                DateOfBirth = m.DateOfBirth,
+                RegisterDate = m.RegisterDate,
+                LastYearIdentityRenewal = m.LastYearIdentityRenewal,
+
+                Status = m.IsBlockedByAdmin ? "Blocked" : "Active",
+                ImageBase64 = m.ImageUrl != null ? Convert.ToBase64String(System.IO.File.ReadAllBytes(m.ImageUrl)) : null,
+
+                IsPrinted = m.IsIdPrinted,
+                IsBlockedByAdmin = m.IsBlockedByAdmin
+            }).ToList();
+        }
+
 
         public async Task<PagedResult<Member>> GetPagedMembersAsync(int page, int pageSize, string search, string? sortBy, string? sortDir)
         {

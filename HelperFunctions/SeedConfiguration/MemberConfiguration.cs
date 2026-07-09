@@ -28,12 +28,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000001",
                     Email = "ali.haydar@example.com",
                     Gender = "Male",
-                    DateOfBirth = "1990-01-01",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1990-05-15"),
+                    LastYearIdentityRenewal = DateTime.Parse("2023-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/men/1.jpg",
                     IdNumber = "ID-001",
                     JobTitle = "Manager",
-                    RegisterDate = "2020-01-01"
+                    RegisterDate = DateTime.Parse("2020-01-01")
                 },
                 new Member
                 {
@@ -45,12 +45,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000002",
                     Email = "sara.mahmood@example.com",
                     Gender = "Female",
-                    DateOfBirth = "1992-03-12",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1992-03-12"),
+                    LastYearIdentityRenewal = DateTime.Parse("2024-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/women/2.jpg",
                     IdNumber = "ID-002",
                     JobTitle = "Software Engineer",
-                    RegisterDate = "2021-02-15"
+                    RegisterDate = DateTime.Parse("2021-02-15")
                 },
                 new Member
                 {
@@ -62,12 +62,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000003",
                     Email = "omar.khalid@example.com",
                     Gender = "Male",
-                    DateOfBirth = "1988-07-21",
-                    LastYearIdentityRenewal = "2023",
+                    DateOfBirth = DateTime.Parse("1988-07-21"),
+                    LastYearIdentityRenewal = DateTime.Parse("2023-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/men/3.jpg",
                     IdNumber = "ID-003",
                     JobTitle = "Accountant",
-                    RegisterDate = "2022-03-10"
+                    RegisterDate = DateTime.Parse("2022-03-10")
                 },
                 new Member
                 {
@@ -79,12 +79,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000004",
                     Email = "lina.ahmed@example.com",
                     Gender = "Female",
-                    DateOfBirth = "1995-11-05",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1995-11-05"),
+                    LastYearIdentityRenewal = DateTime.Parse("2024-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/women/4.jpg",
                     IdNumber = "ID-004",
                     JobTitle = "HR Specialist",
-                    RegisterDate = "2023-04-20"
+                    RegisterDate = DateTime.Parse("2023-04-20")
                 },
                 new Member
                 {
@@ -96,12 +96,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000005",
                     Email = "hassan.jabar@example.com",
                     Gender = "Male",
-                    DateOfBirth = "1991-09-14",
-                    LastYearIdentityRenewal = "2022",
+                    DateOfBirth = DateTime.Parse("1991-09-14"),
+                    LastYearIdentityRenewal = DateTime.Parse("2022-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/men/5.jpg",
                     IdNumber = "ID-005",
                     JobTitle = "Financial Analyst",
-                    RegisterDate = "2022-05-15"
+                    RegisterDate = DateTime.Parse("2022-05-15")
                 },
                 new Member
                 {
@@ -113,12 +113,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000006",
                     Email = "noor.zahra@example.com",
                     Gender = "Female",
-                    DateOfBirth = "1993-02-18",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1993-02-18"),
+                    LastYearIdentityRenewal = DateTime.Parse("2024-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/women/6.jpg",
                     IdNumber = "ID-006",
                     JobTitle = "Marketing Manager",
-                    RegisterDate = "2023-06-18"
+                    RegisterDate = DateTime.Parse("2023-06-18")
                 },
                 new Member
                 {
@@ -130,12 +130,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000007",
                     Email = "mustafa.ali@example.com",
                     Gender = "Male",
-                    DateOfBirth = "1989-06-30",
-                    LastYearIdentityRenewal = "2023",
+                    DateOfBirth = DateTime.Parse("1989-06-30"),
+                    LastYearIdentityRenewal = DateTime.Parse("2023-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/men/7.jpg",
                     IdNumber = "ID-007",
                     JobTitle = "Software Developer",
-                    RegisterDate = "2021-07-12"
+                    RegisterDate = DateTime.Parse("2021-07-12")
                 },
                 new Member
                 {
@@ -147,12 +147,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000008",
                     Email = "fatima.kareem@example.com",
                     Gender = "Female",
-                    DateOfBirth = "1994-04-22",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1994-04-22"),
+                    LastYearIdentityRenewal = DateTime.Parse("2024-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/women/8.jpg",
                     IdNumber = "ID-008",
                     JobTitle = "Project Manager",
-                    RegisterDate = "2022-08-25"
+                    RegisterDate = DateTime.Parse("2022-08-25")
                 },
                 new Member
                 {
@@ -164,12 +164,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000009",
                     Email = "yasir.salman@example.com",
                     Gender = "Male",
-                    DateOfBirth = "1990-12-10",
-                    LastYearIdentityRenewal = "2024",
+                    DateOfBirth = DateTime.Parse("1990-12-10"),
+                    LastYearIdentityRenewal = DateTime.Parse("2024-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/men/9.jpg",
                     IdNumber = "ID-009",
                     JobTitle = "Business Analyst",
-                    RegisterDate = "2023-09-05"
+                    RegisterDate = DateTime.Parse("2023-09-05")
                 },
                 new Member
                 {
@@ -181,12 +181,12 @@ namespace AliHaydarBase.Api.HelperFunctions.SeedConfiguration
                     Phone = "07700000010",
                     Email = "rana.saeed@example.com",
                     Gender = "Female",
-                    DateOfBirth = "1996-08-17",
-                    LastYearIdentityRenewal = "2023",
+                    DateOfBirth = DateTime.Parse("1996-08-17"),
+                    LastYearIdentityRenewal = DateTime.Parse("2023-01-05"),
                     ImageUrl = "https://randomuser.me/api/portraits/women/10.jpg",
                     IdNumber = "ID-010",
                     JobTitle = "Designer",
-                    RegisterDate = "2023-10-12"
+                    RegisterDate = DateTime.Parse("2023-10-12")
                 }
             );
         }
