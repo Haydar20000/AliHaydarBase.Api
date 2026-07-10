@@ -24,7 +24,7 @@ namespace AliHaydarBase.Api.DTOs.Response.Members
         public string Status { get; set; }
         public string ImageBase64 { get; set; }
 
-        public bool IsPrinted { get; set; }
+        public bool IsIdPrinted { get; set; }
         public bool IsBlockedByAdmin { get; set; }
     }
 

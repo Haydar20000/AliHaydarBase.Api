@@ -29,7 +29,7 @@ namespace AliHaydarBase.Api.Core.Mapper.Members
                 .ForMember(d => d.LastYearIdentityRenewal, o => o.MapFrom(s => s.LastYearIdentityRenewal))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.IsBlockedByAdmin ? "Blocked" : "Active"))
                 .ForMember(d => d.ImageBase64, o => o.MapFrom(s => ImageHelper.ConvertImageUrlToBase64(s.ImageUrl)))
-                .ForMember(d => d.IsPrinted, o => o.MapFrom(s => s.IsIdPrinted))
+                .ForMember(d => d.IsIdPrinted, o => o.MapFrom(s => s.IsIdPrinted))
                 .ForMember(d => d.IsBlockedByAdmin, o => o.MapFrom(s => s.IsBlockedByAdmin));
 
 

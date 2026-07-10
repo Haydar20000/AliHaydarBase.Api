@@ -38,7 +38,7 @@ namespace AliHaydarBase.Api.Core.Repositories
                 Status = m.IsBlockedByAdmin ? "Blocked" : "Active",
                 ImageBase64 = m.ImageUrl,
 
-                IsPrinted = m.IsIdPrinted,
+                IsIdPrinted = m.IsIdPrinted,
                 IsBlockedByAdmin = m.IsBlockedByAdmin
             }).ToList();
         }
@@ -73,60 +73,33 @@ namespace AliHaydarBase.Api.Core.Repositories
                 Status = m.IsBlockedByAdmin ? "Blocked" : "Active",
                 ImageBase64 = m.ImageUrl != null ? Convert.ToBase64String(System.IO.File.ReadAllBytes(m.ImageUrl)) : null,
 
-                IsPrinted = m.IsIdPrinted,
+                IsIdPrinted = m.IsIdPrinted,
                 IsBlockedByAdmin = m.IsBlockedByAdmin
             }).ToList();
         }
-
-
-        public async Task<PagedResult<Member>> GetPagedMembersAsync(int page, int pageSize, string search, string? sortBy, string? sortDir)
+        public async Task<PagedResult<Member>> GetPagedMembersAsync(int page, int pageSize, string search)
         {
             var query = Query();
 
             if (!string.IsNullOrWhiteSpace(search))
-
             {
                 query = query.Where(m =>
                     m.FullNameArabic.Contains(search) ||
                     m.RegisterNumber.Contains(search));
             }
-            if (!string.IsNullOrWhiteSpace(sortBy))
-            {
-                query = sortBy.ToLower() switch
-                {
-                    "fullname" => sortDir == "desc"
-                        ? query.OrderByDescending(m => m.FullNameArabic)
-                        : query.OrderBy(m => m.FullNameArabic),
 
-                    "stage" => sortDir == "desc"
-                        ? query.OrderByDescending(m => m.Stage)
-                        : query.OrderBy(m => m.Stage),
-
-                    "registernumber" => sortDir == "desc"
-                        ? query.OrderByDescending(m => m.RegisterNumber)
-                        : query.OrderBy(m => m.RegisterNumber),
-
-                    "lastyearidentityrenewal" => sortDir == "desc"
-                        ? query.OrderByDescending(m => m.LastYearIdentityRenewal)
-                        : query.OrderBy(m => m.LastYearIdentityRenewal),
-
-                    "status" => sortDir == "desc"
-                        ? query.OrderByDescending(m => m.IsBlockedByAdmin)
-                        : query.OrderBy(m => m.IsBlockedByAdmin),
-
-                    _ => query.OrderBy(m => m.FullNameArabic)
-                };
-            }
+            // Default ordering (required for stable pagination)
+            query = query.OrderBy(m => m.FullNameArabic);
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderBy(m => m.FullNameArabic)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             return new PagedResult<Member>(items, totalCount, page, pageSize);
         }
+
     }
 }

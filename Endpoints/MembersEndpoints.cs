@@ -80,8 +80,6 @@ namespace AliHaydarBase.Api.Endpoints
             int page,
             int pageSize,
             string? search,
-            string? sortBy,
-            string? sortDir,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ClaimsPrincipal user)
@@ -104,7 +102,7 @@ namespace AliHaydarBase.Api.Endpoints
             var isAdmin = user.IsInRole("Admin");
 
             // 3. Fetch paged members
-            var paged = await unitOfWork.Members.GetPagedMembersAsync(page, pageSize, search ?? "", sortBy, sortDir);
+            var paged = await unitOfWork.Members.GetPagedMembersAsync(page, pageSize, search ?? "");
 
             // 4. Filter by city if NOT admin
             if (!isAdmin && !string.IsNullOrEmpty(userCity))
