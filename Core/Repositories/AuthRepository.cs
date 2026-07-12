@@ -423,15 +423,20 @@ namespace AliHaydarBase.Api.Core.Repositories
             }
 
             // 4️⃣ Ensure user has a city assigned
-            if (string.IsNullOrWhiteSpace(user.City))
+            // Admins do not require a city  
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains("Admin"))
             {
-                response.Errors.Add("Your account is not assigned to any city. Contact the administrator.");
-                response.IsSuccessful = false;
-                return response;
+                if (string.IsNullOrWhiteSpace(user.City))
+                {
+                    response.Errors.Add("Your account is not assigned to any city. Contact the administrator.");
+                    response.IsSuccessful = false;
+                    return response;
+                }
             }
 
             // 5️⃣ Generate access token
-            var roles = await _userManager.GetRolesAsync(user);
+
             var jwtResponse = _jwt.GenerateAccessToken(new JwtRequestDto
             {
                 User = user,
